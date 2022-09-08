@@ -1,0 +1,61 @@
+---
+name: build static site
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: install Rust toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
+          sh rustup.sh -y
+          rustup --version
+
+      - name: checkout repository
+        uses: actions/checkout@v3
+
+      - name: build and run the program
+        run: |
+          cargo run
+          ls -l
+
+      - name: archive artifact
+        shell: bash
+        run: |
+          tar \
+            --dereference --hard-dereference \
+            --directory "$PWD" \
+            -cvf "$PWD/github-pages" \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=.target \
+            .
+
+      - name: upload artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: github-pages
+          path: github-pages
+          retention-days: ${{ inputs.retention-days }}
+
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: deploy to github pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+        with:
+          artifact_name: github-pages
+          token: ${{ secrets.GITHUB_TOKEN }}

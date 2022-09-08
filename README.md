@@ -1,1 +1,0 @@
-# enkron's homepage

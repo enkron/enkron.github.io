@@ -45,12 +45,13 @@ jobs:
   test:
     # This is jist a stub for future unit/integration tests applied to
     # the binary or generated site itself
+    needs: build
     runs-on: ubuntu-latest
     steps:
 
       - name: check the site is ok
         run: |
-          "curl -L ${{ steps.deployment.outputs.page_url }}"
+          curl -L enkron.github.io
 
 
   deploy:

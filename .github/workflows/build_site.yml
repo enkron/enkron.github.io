@@ -42,6 +42,17 @@ jobs:
           path: github-pages
           retention-days: ${{ inputs.retention-days }}
 
+  test:
+    # This is jist a stub for future unit/integration tests applied to
+    # the binary or generated site itself
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: install Rust toolchain
+        run: |
+          if [ $(curl -LI http://google.com -o /dev/null -w '%{http_code}\n' -s) == "200"  ]; then echo 0; fi
+
+
   deploy:
     needs: build
     permissions:

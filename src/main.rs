@@ -19,8 +19,9 @@ fn main() -> std::io::Result<()> {
             <title>workflow test v{}</title>\n \
           </head>\n \
           <body>\n \
+            <h1>the page is under construction</h1>\n \
+            <p>build: {}</p>\n \
             <p>updated: {}</p>\n \
-            <p>Github SHA: {}</p>\n \
           </body>\n \
         </html>",
         WORKFLOW_TEST_VERSION_NUM,

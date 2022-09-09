@@ -3,7 +3,7 @@ implemented using Rust (actually not implemented at all).
 
 ```mermaid
     flowchart LR;
-    A[content] --> B[static site generator];
-    C[html templates]-->B;
-    B-->D[static site index.html];
+    A[content in Markdown] --> B[static site generator];
+    C[HTML templates]-->B;
+    B-->D[index.html];
 ```

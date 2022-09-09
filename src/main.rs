@@ -25,9 +25,11 @@ fn main() -> std::io::Result<()> {
           </head>\n \
           <body>\n \
             <h1>the page is under construction</h1>\n \
+          </body>\n \
+          <footer>\n \
             <p>build: {}</p>\n \
             <p>updated: {}</p>\n \
-          </body>\n \
+          </footer>\n \
         </html>",
         WORKFLOW_TEST_VERSION_NUM,
         github_sha,

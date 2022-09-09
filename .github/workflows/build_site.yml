@@ -53,7 +53,9 @@ jobs:
     steps:
 
       - name: check the site is ok
-        run: curl -L enkron.github.io
+        run: |
+          curl -L enkron.github.io
+          echo "GITHUB_SHA=$GITHUB_SHA"
 
   deploy:
     needs: build

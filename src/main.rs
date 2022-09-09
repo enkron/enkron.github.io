@@ -3,7 +3,7 @@ use chrono;
 use std::{env, fs, path::Path};
 
 const SITE_ENTRY_POINT: &str = "index.html";
-const WORKFLOW_TEST_VERSION_NUM: u16 = 6;
+const WORKFLOW_TEST_VERSION_NUM: u16 = 7;
 
 fn main() -> std::io::Result<()> {
     let github_sha = match env::var("GITHUB_SHA") {
@@ -17,6 +17,11 @@ fn main() -> std::io::Result<()> {
           <head>\n \
             <meta charset=\"utf-8\">\n \
             <title>workflow test v{}</title>\n \
+            <style>\n \
+              h1 {{\n \
+                text-align: center;\n \
+              }}\n \
+            </style>\n \
           </head>\n \
           <body>\n \
             <h1>the page is under construction</h1>\n \
@@ -25,15 +30,13 @@ fn main() -> std::io::Result<()> {
           </body>\n \
         </html>",
         WORKFLOW_TEST_VERSION_NUM,
+        github_sha,
         chrono::offset::Utc::now(),
-        github_sha
     );
 
     if !Path::new(SITE_ENTRY_POINT).exists() {
         fs::write(SITE_ENTRY_POINT, &index)?;
     }
-
-    println!("{}", &index);
 
     Ok(())
 }

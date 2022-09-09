@@ -24,26 +24,26 @@ jobs:
           ls -altr
 
       - name: cleanup
-        run: "echo 'drop: rustup.sh' && rm rustup.sh 2>/dev/null"
+        run: |
+          #"echo 'drop: rustup.sh' && rm rustup.sh 2>/dev/null"
+          ls
 
       - name: archive artifact
         shell: bash
-        run: >
-          tar
-          --dereference
-          --hard-dereference
-          -cvf "$PWD/github-pages"
-          --exclude=*
-          --exclude=.*
-          --exclude-ignore=index.html
-          -C "$PWD"
-
+        run: |
+          tar \
+            --dereference --hard-dereference \
+            --directory "$PWD" \
+            -cvf "$PWD/github-pages" \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=.target \
+            .
       - name: upload artifact
         uses: actions/upload-artifact@main
         with:
           name: github-pages
           path: github-pages
-          retention-days: ${{ inputs.retention-days }}
 
   test:
     # This is jist a stub for future unit/integration tests applied to
@@ -53,10 +53,7 @@ jobs:
     steps:
 
       - name: check the site is ok
-        run: >
-          "test -r $PWD/github-pages &&"
-          "tar -tf $PWD/github-pages ||"
-          "echo not archived"
+        run: curl -L enkron.github.io
 
   deploy:
     needs: build

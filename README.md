@@ -2,8 +2,8 @@
 implemented using Rust (actually not implemented at all).
 
 ```mermaid
-    graph LR;
-    A-->B;
-    C-->B;
-    B-->D;
+    flowchart LR;
+    A[content] --> B[static site generator];
+    C[html templates]-->B;
+    B-->D[static site index.html];
 ```

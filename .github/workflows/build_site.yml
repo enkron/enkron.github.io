@@ -20,20 +20,23 @@ jobs:
 
       - name: build and run the program
         run: |
-          cargo run
-          ls -l
+          cargo run --release
+          ls -altr
+
+      - name: cleanup
+        run: "echo 'drop: rustup.sh' && rm rustup.sh 2>/dev/null"
 
       - name: archive artifact
         shell: bash
-        run: |
-          tar \
-            --dereference --hard-dereference \
-            --directory "$PWD" \
-            -cvf "$PWD/github-pages" \
-            --exclude=.git \
-            --exclude=.github \
-            --exclude=.target \
-            .
+        run: >
+          tar
+          --dereference
+          --hard-dereference
+          -cvf "$PWD/github-pages"
+          --exclude=*
+          --exclude=.*
+          --exclude-ignore=index.html
+          -C "$PWD"
 
       - name: upload artifact
         uses: actions/upload-artifact@main
@@ -50,9 +53,10 @@ jobs:
     steps:
 
       - name: check the site is ok
-        run: |
-          curl -L enkron.github.io
-
+        run: >
+          "test -r $PWD/github-pages &&"
+          "tar -tf $PWD/github-pages ||"
+          "echo not archived"
 
   deploy:
     needs: build

@@ -7,12 +7,12 @@ const SITE_ENTRY_POINT: &str = "index.html";
 fn main() -> std::io::Result<()> {
     let github_sha = match env::var("GITHUB_SHA") {
         Ok(v) => v,
-        Err(_) => "no SHA variable is found".into(),
+        Err(_) => "no GITHUB_SHA variable is found".into(),
     };
 
-    let github_run_id = match env::var("GITHUB_RUN_ID") {
+    let github_run_id = match env::var("GITHUB_RUN_NUMBER") {
         Ok(v) => v,
-        Err(_) => "no Github run id is found".into(),
+        Err(_) => "no GITHUB_RUN_NUMBER variable is found".into(),
     };
 
     let index = format!(

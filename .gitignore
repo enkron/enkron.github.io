@@ -1,6 +1,7 @@
+# Github pages config
 _config.yml
 
-
-# Added by cargo
-
+# Build stuff
 /target
+index.html
+github-pages.tar

@@ -30,15 +30,15 @@ jobs:
 
       - name: archive artifact
         shell: bash
-        run: |
-          tar \
-            --dereference --hard-dereference \
-            --directory "$PWD" \
-            -cvf "$PWD/github-pages" \
-            --exclude=.git \
-            --exclude=.github \
-            --exclude=.target \
-            .
+        run: >
+          tar
+          --dereference --hard-dereference
+          --directory "$PWD"
+          -cvf "$PWD/github-pages"
+          --exclude=.git
+          --exclude=.github
+          --exclude=.target
+          .
       - name: upload artifact
         uses: actions/upload-artifact@main
         with:

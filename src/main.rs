@@ -3,12 +3,16 @@ use chrono;
 use std::{env, fs, path::Path};
 
 const SITE_ENTRY_POINT: &str = "index.html";
-const WORKFLOW_TEST_VERSION_NUM: u16 = 8;
 
 fn main() -> std::io::Result<()> {
     let github_sha = match env::var("GITHUB_SHA") {
         Ok(v) => v,
         Err(_) => "no SHA variable is found".into(),
+    };
+
+    let github_run_id = match env::var("GITHUB_RUN_ID") {
+        Ok(v) => v,
+        Err(_) => "no Github run id is found".into(),
     };
 
     let index = format!(
@@ -36,7 +40,7 @@ fn main() -> std::io::Result<()> {
             </div>
           </body>\n \
         </html>",
-        WORKFLOW_TEST_VERSION_NUM,
+        github_run_id,
         github_sha,
         chrono::offset::Utc::now(),
     );

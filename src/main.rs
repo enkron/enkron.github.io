@@ -14,37 +14,6 @@
 //        Ok(v) => v,
 //        Err(_) => "no GITHUB_RUN_NUMBER variable is found".into(),
 //    };
-//
-//    let index = format!(
-//        "<!DOCTYPE html>\n \
-//        <html lang=\"en-US\">\n \
-//          <head>\n \
-//            <link rel=\"stylesheet\" type=\"text/css\" href=\"css/main.css\" />\n \
-//            <meta charset=\"utf-8\">\n \
-//            <title>workflow test v{}</title>\n \
-//            <style>\n \
-//              h1 {{\n \
-//                text-align: center;\n \
-//              }}\n \
-//            </style>\n \
-//          </head>\n \
-//          <body>\n \
-//            <div id=\"page-container\">\n \
-//              <div id=\"content-wrap\">\n \
-//                <h1>the page is under construction</h1>\n \
-//              </div>
-//              <footer id=\"footer\">\n \
-//                <p>build: {}</p>\n \
-//                <p>updated: {}</p>\n \
-//              </footer>\n \
-//            </div>
-//          </body>\n \
-//        </html>",
-//        github_run_id,
-//        github_sha,
-//        chrono::offset::Utc::now(),
-//    );
-//
 //}
 use pulldown_cmark;
 use std::{fs, path::Path};
@@ -54,61 +23,66 @@ const CONTENT_DIR: &str = "content";
 const PUBLIC_DIR: &str = "public";
 
 fn main() -> Result<(), anyhow::Error> {
-    build(CONTENT_DIR, PUBLIC_DIR)?;
+    Site::build(CONTENT_DIR, PUBLIC_DIR)?;
 
     Ok(())
 }
 
-fn build(content: &str, public: &str) -> Result<(), anyhow::Error> {
-    if !Path::new(public).exists() {
-        fs::create_dir_all(public)?;
+struct Site;
+
+impl Site {
+    fn build(content: &str, public: &str) -> Result<Self, anyhow::Error> {
+        if !Path::new(public).exists() {
+            fs::create_dir_all(public)?;
+        }
+
+        let markdown_files: Vec<String> = walkdir::WalkDir::new(content)
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().display().to_string().ends_with(".md"))
+            .map(|e| e.path().display().to_string())
+            .collect();
+        let mut html_files = Vec::with_capacity(markdown_files.len());
+
+        for file in &markdown_files {
+            let mut html = templates::HEADER.to_owned();
+            let markdown = fs::read_to_string(&file)?;
+            let parser = pulldown_cmark::Parser::new_ext(&markdown, pulldown_cmark::Options::all());
+
+            let mut body = String::new();
+            pulldown_cmark::html::push_html(&mut body, parser);
+
+            html.push_str(templates::render_body(&body).as_str());
+            html.push_str(templates::FOOTER);
+
+            let html_file = file.replace(content, public).replace(".md", ".html");
+            fs::write(&html_file, html)?;
+
+            html_files.push(html_file);
+        }
+
+        Self::index(html_files, public)?;
+
+        Ok(Self)
     }
 
-    let markdown_files: Vec<String> = walkdir::WalkDir::new(content)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.path().display().to_string().ends_with(".md"))
-        .map(|e| e.path().display().to_string())
-        .collect();
-    let mut html_files = Vec::with_capacity(markdown_files.len());
+    fn index(files: Vec<String>, public: &str) -> Result<(), anyhow::Error> {
+        let mut idx = templates::HEADER.to_owned();
+        let body = files
+            .into_iter()
+            .map(|file| {
+                let file = file.trim_start_matches(public);
+                let title = file.trim_start_matches("/").trim_end_matches(".html");
+                format!(r#"<a href="{}{}">{}</a>"#, public, file, title)
+            })
+            .collect::<Vec<String>>()
+            .join("<br />\n");
 
-    for file in &markdown_files {
-        let mut html = templates::HEADER.to_owned();
-        let markdown = fs::read_to_string(&file)?;
-        let parser = pulldown_cmark::Parser::new_ext(&markdown, pulldown_cmark::Options::all());
+        idx.push_str(templates::render_body(&body).as_str());
+        idx.push_str(templates::FOOTER);
+        println!("{}", idx);
+        fs::write(Path::new("index.html"), idx)?;
 
-        let mut body = String::new();
-        pulldown_cmark::html::push_html(&mut body, parser);
-
-        html.push_str(templates::render_body(&body).as_str());
-        html.push_str(templates::FOOTER);
-
-        let html_file = file.replace(content, public).replace(".md", ".html");
-        fs::write(&html_file, html)?;
-
-        html_files.push(html_file);
+        Ok(())
     }
-
-    write_index(html_files, public)?;
-
-    Ok(())
-}
-
-fn write_index(files: Vec<String>, public: &str) -> Result<(), anyhow::Error> {
-    let mut index = templates::HEADER.to_owned();
-    let body = files
-        .into_iter()
-        .map(|file| {
-            let file = file.trim_start_matches(public);
-            let title = file.trim_start_matches("/").trim_end_matches(".html");
-            format!(r#"<a href="{}{}">{}</a>"#, public, file, title)
-        })
-        .collect::<Vec<String>>()
-        .join("<br />\n");
-
-    index.push_str(templates::render_body(&body).as_str());
-    index.push_str(templates::FOOTER);
-    fs::write(Path::new("index.html"), index)?;
-
-    Ok(())
 }

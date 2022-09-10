@@ -89,8 +89,6 @@ fn build(content: &str, public: &str) -> Result<(), anyhow::Error> {
         html.push_str(templates::FOOTER);
 
         let html_file = file.replace(content, public).replace(".md", ".html");
-        let folder = Path::new(&html_file).parent().unwrap();
-        let _ = fs::create_dir_all(folder);
         fs::write(&html_file, html)?;
 
         html_files.push(html_file);
@@ -102,22 +100,20 @@ fn build(content: &str, public: &str) -> Result<(), anyhow::Error> {
 }
 
 fn write_index(files: Vec<String>, public: &str) -> Result<(), anyhow::Error> {
-    let mut html = templates::HEADER.to_owned();
+    let mut index = templates::HEADER.to_owned();
     let body = files
         .into_iter()
         .map(|file| {
             let file = file.trim_start_matches(public);
             let title = file.trim_start_matches("/").trim_end_matches(".html");
-            format!(r#"<a href="{}">{}</a>"#, file, title)
+            format!(r#"<a href="{}{}">{}</a>"#, public, file, title)
         })
         .collect::<Vec<String>>()
         .join("<br />\n");
 
-    html.push_str(templates::render_body(&body).as_str());
-    html.push_str(templates::FOOTER);
-
-    let index_path = Path::new(&public).join("index.html");
-    fs::write(index_path, html)?;
+    index.push_str(templates::render_body(&body).as_str());
+    index.push_str(templates::FOOTER);
+    fs::write(Path::new("index.html"), index)?;
 
     Ok(())
 }

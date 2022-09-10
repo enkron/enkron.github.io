@@ -45,11 +45,6 @@
 //        chrono::offset::Utc::now(),
 //    );
 //
-//    if !Path::new(SITE_ENTRY_POINT).exists() {
-//        fs::write(SITE_ENTRY_POINT, &index)?;
-//    }
-//
-//    Ok(())
 //}
 use pulldown_cmark;
 use std::{fs, path::Path};

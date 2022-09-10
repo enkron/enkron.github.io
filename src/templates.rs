@@ -4,7 +4,7 @@ pub const HEADER: &str = r#"<!DOCTYPE html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="css/main.css" />
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
     <title>workflow test v{}</title>
       <style>
         h1 {{
@@ -36,7 +36,6 @@ pub fn render_body(body: &str) -> String {
         r#"  <body>
     <div id="page-container">
       <div id="content-wrap">
-        <h1>the page is under construction</h1>
     <nav>
         <a href="/">home</a>
     </nav>

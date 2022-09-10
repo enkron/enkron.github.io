@@ -2,7 +2,9 @@
 use pulldown_cmark;
 use std::{fs, path::Path};
 
-mod templates;
+mod render;
+use render::Layout;
+
 const CONTENT_DIR: &str = "content";
 const PUBLIC_DIR: &str = "public";
 
@@ -29,15 +31,15 @@ impl Site {
         let mut html_files = Vec::with_capacity(markdown_files.len());
 
         for file in &markdown_files {
-            let mut html = templates::header();
+            let mut html = Layout::header();
             let markdown = fs::read_to_string(&file)?;
             let parser = pulldown_cmark::Parser::new_ext(&markdown, pulldown_cmark::Options::all());
 
             let mut body = String::new();
             pulldown_cmark::html::push_html(&mut body, parser);
 
-            html.push_str(templates::body(&body).as_str());
-            html.push_str(&templates::footer());
+            html.push_str(Layout::body(&body).as_str());
+            html.push_str(&Layout::footer());
 
             let html_file = file.replace(content, public).replace(".md", ".html");
             fs::write(&html_file, html)?;
@@ -51,7 +53,7 @@ impl Site {
     }
 
     fn index(files: Vec<String>, public: &str) -> Result<(), anyhow::Error> {
-        let mut idx = templates::header();
+        let mut idx = Layout::header();
         let body = files
             .into_iter()
             .map(|file| {
@@ -62,9 +64,8 @@ impl Site {
             .collect::<Vec<String>>()
             .join("<br />\n");
 
-        idx.push_str(templates::body(&body).as_str());
-        idx.push_str(&templates::footer());
-        println!("{}", idx);
+        idx.push_str(Layout::body(&body).as_str());
+        idx.push_str(&Layout::footer());
         fs::write(Path::new("index.html"), idx)?;
 
         Ok(())

@@ -1,20 +1,4 @@
 #![warn(clippy::all, clippy::pedantic)]
-//use chrono;
-//use std::{env, fs, path::Path};
-//
-//const SITE_ENTRY_POINT: &str = "index.html";
-//
-//fn main() -> std::io::Result<()> {
-//    let github_sha = match env::var("GITHUB_SHA") {
-//        Ok(v) => v,
-//        Err(_) => "no GITHUB_SHA variable is found".into(),
-//    };
-//
-//    let github_run_id = match env::var("GITHUB_RUN_NUMBER") {
-//        Ok(v) => v,
-//        Err(_) => "no GITHUB_RUN_NUMBER variable is found".into(),
-//    };
-//}
 use pulldown_cmark;
 use std::{fs, path::Path};
 
@@ -45,15 +29,15 @@ impl Site {
         let mut html_files = Vec::with_capacity(markdown_files.len());
 
         for file in &markdown_files {
-            let mut html = templates::HEADER.to_owned();
+            let mut html = templates::header();
             let markdown = fs::read_to_string(&file)?;
             let parser = pulldown_cmark::Parser::new_ext(&markdown, pulldown_cmark::Options::all());
 
             let mut body = String::new();
             pulldown_cmark::html::push_html(&mut body, parser);
 
-            html.push_str(templates::render_body(&body).as_str());
-            html.push_str(templates::FOOTER);
+            html.push_str(templates::body(&body).as_str());
+            html.push_str(&templates::footer());
 
             let html_file = file.replace(content, public).replace(".md", ".html");
             fs::write(&html_file, html)?;
@@ -67,7 +51,7 @@ impl Site {
     }
 
     fn index(files: Vec<String>, public: &str) -> Result<(), anyhow::Error> {
-        let mut idx = templates::HEADER.to_owned();
+        let mut idx = templates::header();
         let body = files
             .into_iter()
             .map(|file| {
@@ -78,8 +62,8 @@ impl Site {
             .collect::<Vec<String>>()
             .join("<br />\n");
 
-        idx.push_str(templates::render_body(&body).as_str());
-        idx.push_str(templates::FOOTER);
+        idx.push_str(templates::body(&body).as_str());
+        idx.push_str(&templates::footer());
         println!("{}", idx);
         fs::write(Path::new("index.html"), idx)?;
 

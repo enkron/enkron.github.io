@@ -2,8 +2,8 @@
 use pulldown_cmark;
 use std::{fs, path::Path};
 
-mod render;
-use render::Layout;
+mod rend;
+use rend::Layout;
 
 const CONTENT_DIR: &str = "content";
 const PUBLIC_DIR: &str = "public";

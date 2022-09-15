@@ -1,6 +1,11 @@
 #![warn(clippy::all, clippy::pedantic)]
-use pulldown_cmark;
-use std::{fs, path::Path};
+use pulldown_cmark::{self, Options, Parser};
+use std::{
+    ffi::OsString,
+    fs,
+    path::{Path, PathBuf},
+};
+use walkdir::WalkDir;
 
 mod rend;
 use rend::Layout;
@@ -9,64 +14,45 @@ const CONTENT_DIR: &str = "content";
 const PUBLIC_DIR: &str = "public";
 
 fn main() -> Result<(), anyhow::Error> {
-    Site::build(CONTENT_DIR, PUBLIC_DIR)?;
+    Site::build()?;
 
     Ok(())
 }
 
 struct Site;
-
 impl Site {
-    fn build(content: &str, public: &str) -> Result<Self, anyhow::Error> {
-        if !Path::new(public).exists() {
-            fs::create_dir_all(public)?;
-        }
-
-        let markdown_files: Vec<String> = walkdir::WalkDir::new(content)
+    fn build() -> Result<(), anyhow::Error> {
+        let mdfiles: Vec<OsString> = WalkDir::new(CONTENT_DIR)
+            .min_depth(1)
             .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.path().display().to_string().ends_with(".md"))
-            .map(|e| e.path().display().to_string())
+            .filter_map(|entry| Some(entry.ok()?.file_name().to_owned()))
             .collect();
-        let mut html_files = Vec::with_capacity(markdown_files.len());
 
-        for file in &markdown_files {
-            let mut html = Layout::header();
-            let markdown = fs::read_to_string(&file)?;
-            let parser = pulldown_cmark::Parser::new_ext(&markdown, pulldown_cmark::Options::all());
+        for mdfile in &mdfiles {
+            let md = fs::read_to_string(Path::new(CONTENT_DIR).join(mdfile))?;
+            let parser = Parser::new_ext(&md, Options::all());
 
             let mut body = String::new();
             pulldown_cmark::html::push_html(&mut body, parser);
 
+            let mut html = String::new();
+            html.push_str(&Layout::header());
             html.push_str(Layout::body(&body).as_str());
             html.push_str(&Layout::footer());
 
-            let html_file = file.replace(content, public).replace(".md", ".html");
-            fs::write(&html_file, html)?;
+            // the comparison is possible as `OsString` implements `PartialEq<&str>` trait
+            if mdfile == "index.md" {
+                let mut mdfile = PathBuf::from(mdfile);
+                mdfile.set_extension("html");
+                fs::write(&mdfile, html)?;
+            } else {
+                fs::create_dir_all(PUBLIC_DIR)?;
 
-            html_files.push(html_file);
+                let mut mdfile = PathBuf::from(PUBLIC_DIR).join(mdfile);
+                mdfile.set_extension("html");
+                fs::write(&mdfile, html)?;
+            }
         }
-
-        Self::index(html_files, public)?;
-
-        Ok(Self)
-    }
-
-    fn index(files: Vec<String>, public: &str) -> Result<(), anyhow::Error> {
-        let mut idx = Layout::header();
-        let body = files
-            .into_iter()
-            .map(|file| {
-                let file = file.trim_start_matches(public);
-                let title = file.trim_start_matches("/").trim_end_matches(".html");
-                format!(r#"<a href="{}{}">{}</a>"#, public, file, title)
-            })
-            .collect::<Vec<String>>()
-            .join("<br />\n");
-
-        idx.push_str(Layout::body(&body).as_str());
-        idx.push_str(&Layout::footer());
-        fs::write(Path::new("index.html"), idx)?;
 
         Ok(())
     }

@@ -1,5 +1,4 @@
 pub struct Layout;
-
 impl Layout {
     pub fn header() -> String {
         let github_ref_name = match std::env::var("GITHUB_REF_NAME") {

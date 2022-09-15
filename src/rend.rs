@@ -11,15 +11,15 @@ impl Layout {
             <html lang="en-US">
         
             <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <link rel="stylesheet" type="text/css" href="/css/main.css" />
-              <title>{}</title>
-                <style>
-                  h1 {{
-                   text-align: center;
-                 }}
-               </style>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link rel="stylesheet" type="text/css" href="/css/main.css" />
+            <title>{}</title>
+            <style>
+              h1 {{
+                text-align: center;
+              }}
+            </style>
             </head>"#,
             github_ref_name
         )
@@ -40,12 +40,12 @@ impl Layout {
             r#"
             </div>
             <footer id="footer">
-              <p>build {}: {}</p>
-              <p>updated: {}</p>
+            <p>build {}: {}</p>
+            <p>updated: {}</p>
             </footer>
-          </div>
+            </div>
          
-          </html>"#,
+            </html>"#,
             github_run_id,
             github_sha,
             chrono::offset::Utc::now(),
@@ -54,15 +54,16 @@ impl Layout {
 
     pub fn body(body: &str) -> String {
         format!(
-            r#"  <body>
-        <div id="page-container">
-          <div id="content-wrap">
-        <nav>
+            r#"
+            <body>
+            <div id="page-container">
+            <div id="content-wrap">
+            <nav>
             <a href="/">home</a>
-        </nav>
-        <br />
-        {}
-      </body>"#,
+            </nav>
+            <br />
+            {}
+            </body>"#,
             body
         )
     }

@@ -15,8 +15,9 @@ Build stages:
 ```mermaid
     flowchart LR;
     A[provision VM/container]-->B[install Rust toolchains];
-    B-->C[build static pages];
-    C-->D[site availability test];
-    C-->E[pack artifacts];
-    E-->F[deploy artifacts];
+    B-->C[checkout repository];
+    C-->D[build static pages];
+    C-->E[site availability test];
+    D-->F[pack artifacts];
+    F-->G[deploy artifacts];
 ```

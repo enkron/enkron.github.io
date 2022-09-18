@@ -14,12 +14,9 @@ impl Layout {
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <link rel="stylesheet" type="text/css" href="/css/main.css" />
+            <link rel="stylesheet" href="/css/styles.css">
+            <link rel="stylesheet" href="/web/hack.css">
             <title>{}</title>
-            <style>
-              h1 {{
-                text-align: center;
-              }}
-            </style>
             </head>"#,
             github_ref_name
         )

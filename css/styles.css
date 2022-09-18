@@ -1,0 +1,14 @@
+body {
+    margin: 0;
+    line-height: 1.5;
+    font-family: Hack, monospace;
+}
+
+code {
+    font-family: Hack, monospace;
+}
+
+h1 {
+    text-align: center;
+    font-family: Hack, monospace;
+}

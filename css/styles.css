@@ -10,6 +10,11 @@ footer {
     font-size: 10px;
 }
 
+nav {
+    font-family: Hack, monospace;
+    font-size: 10px;
+}
+
 code {
     font-family: Hack, monospace;
 }

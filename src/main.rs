@@ -30,9 +30,6 @@ impl Site {
             .filter_map(|entry| Some(entry.ok()?.file_name().to_owned()))
             .collect();
 
-        fs::create_dir_all(DOWNLOAD_DIR)?;
-        let pdf_app = PdfApplication::new()?;
-
         for mdfile in &mdfiles {
             let md = fs::read_to_string(Path::new(CONTENT_DIR).join(mdfile))?;
             let parser = Parser::new_ext(&md, Options::all());
@@ -43,19 +40,6 @@ impl Site {
             let mut html = String::new();
             html.push_str(&Layout::header());
             html.push_str(Layout::body(&body).as_str());
-
-            // PDF creation accures here hence a final document won't contain the footer in it's body
-            let mut pdfout = pdf_app
-                .builder()
-                .orientation(Orientation::Portrait)
-                .margin(Size::Inches(2))
-                .title("cv")
-                .build_from_html(&html)?;
-
-            let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(&mdfile);
-            pdf_path.set_extension("pdf");
-            pdfout.save(pdf_path)?;
-
             html.push_str(&Layout::footer());
 
             // the comparison is possible as `OsString` implements `PartialEq<&str>` trait
@@ -71,6 +55,35 @@ impl Site {
                 fs::write(&mdfile, html)?;
             }
         }
+
+        Self::export("cv.md")?;
+
+        Ok(())
+    }
+
+    // Convert provided Markdown file to PDF format and place it in download directory.
+    fn export(f: &str) -> Result<(), anyhow::Error> {
+        fs::create_dir_all(DOWNLOAD_DIR)?;
+        let pdf_app = PdfApplication::new()?;
+
+        let md = fs::read_to_string(Path::new(CONTENT_DIR).join(f))?;
+        let parser = Parser::new_ext(&md, Options::all());
+
+        let mut body = String::new();
+        pulldown_cmark::html::push_html(&mut body, parser);
+        let mut html = String::new();
+        html.push_str(Layout::body(&body).as_str());
+
+        let mut pdfout = pdf_app
+            .builder()
+            .orientation(Orientation::Portrait)
+            .margin(Size::Inches(2))
+            .title("cv")
+            .build_from_html(&html)?;
+
+        let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(&f);
+        pdf_path.set_extension("pdf");
+        pdfout.save(pdf_path)?;
 
         Ok(())
     }

@@ -15,6 +15,11 @@ jobs:
           sh rustup.sh -y
           rustup --version
 
+      - name: install `wkhtmltopdf` tool
+        run: |
+          wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
+          yes |dpkg -i wkhtmltox_0.12.6-1.focal_amd64.deb
+
       - name: checkout repository
         uses: actions/checkout@v3
 

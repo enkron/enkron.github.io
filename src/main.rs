@@ -6,6 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use walkdir::WalkDir;
+use wkhtmltopdf::{Orientation, PdfApplication, Size};
 
 mod rend;
 use rend::Layout;
@@ -28,6 +29,11 @@ impl Site {
             .filter_map(|entry| Some(entry.ok()?.file_name().to_owned()))
             .collect();
 
+        // WIP
+        fs::create_dir_all("downloads")?;
+        let pdf_app = PdfApplication::new().expect("Failed to init PDF application");
+        // WIP
+
         for mdfile in &mdfiles {
             let md = fs::read_to_string(Path::new(CONTENT_DIR).join(mdfile))?;
             let parser = Parser::new_ext(&md, Options::all());
@@ -39,6 +45,21 @@ impl Site {
             html.push_str(&Layout::header());
             html.push_str(Layout::body(&body).as_str());
             html.push_str(&Layout::footer());
+
+            // WIP
+            let mut pdfout = pdf_app
+                .builder()
+                .orientation(Orientation::Landscape)
+                .margin(Size::Inches(2))
+                .title("test_pdf_out_1")
+                .build_from_html(&html)
+                .expect("failed to build pdf");
+
+            let mut pdf_path = PathBuf::from("downloads").join(&mdfile);
+            pdf_path.set_extension("pdf");
+
+            pdfout.save(pdf_path).expect("failed to save foo.pdf");
+            // WIP
 
             // the comparison is possible as `OsString` implements `PartialEq<&str>` trait
             if mdfile == "index.md" {

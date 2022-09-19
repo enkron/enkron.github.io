@@ -31,7 +31,7 @@ impl Site {
             .collect();
 
         fs::create_dir_all(DOWNLOAD_DIR)?;
-        let pdf_app = PdfApplication::new().expect("Failed to init PDF application");
+        let pdf_app = PdfApplication::new()?;
 
         for mdfile in &mdfiles {
             let md = fs::read_to_string(Path::new(CONTENT_DIR).join(mdfile))?;
@@ -50,12 +50,11 @@ impl Site {
                 .orientation(Orientation::Portrait)
                 .margin(Size::Inches(2))
                 .title("cv")
-                .build_from_html(&html)
-                .expect("failed to build pdf");
+                .build_from_html(&html)?;
 
             let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(&mdfile);
             pdf_path.set_extension("pdf");
-            pdfout.save(pdf_path).expect("failed to save foo.pdf");
+            pdfout.save(pdf_path)?;
 
             html.push_str(&Layout::footer());
 

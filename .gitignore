@@ -6,4 +6,6 @@ _config.yml
 index.html
 github-pages.tar
 public/
+pub/
 downloads/
+download/

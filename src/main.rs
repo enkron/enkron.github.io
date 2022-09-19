@@ -12,7 +12,8 @@ mod rend;
 use rend::Layout;
 
 const CONTENT_DIR: &str = "content";
-const PUBLIC_DIR: &str = "public";
+const DOWNLOAD_DIR: &str = "download";
+const PUBLIC_DIR: &str = "pub";
 
 fn main() -> Result<(), anyhow::Error> {
     Site::build()?;
@@ -30,7 +31,7 @@ impl Site {
             .collect();
 
         // WIP
-        fs::create_dir_all("downloads")?;
+        fs::create_dir_all(DOWNLOAD_DIR)?;
         let pdf_app = PdfApplication::new().expect("Failed to init PDF application");
         // WIP
 
@@ -55,7 +56,7 @@ impl Site {
                 .build_from_html(&html)
                 .expect("failed to build pdf");
 
-            let mut pdf_path = PathBuf::from("downloads").join(&mdfile);
+            let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(&mdfile);
             pdf_path.set_extension("pdf");
 
             pdfout.save(pdf_path).expect("failed to save foo.pdf");

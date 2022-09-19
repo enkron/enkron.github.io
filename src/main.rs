@@ -39,24 +39,27 @@ impl Site {
 
             let mut body = String::new();
             pulldown_cmark::html::push_html(&mut body, parser);
-
             let mut html = String::new();
-            html.push_str(&Layout::header());
-            html.push_str(Layout::body(&body).as_str());
 
             // PDF creation accures here hence a final document won't contain the footer in it's body
-            let mut pdfout = pdf_app
-                .builder()
-                .orientation(Orientation::Portrait)
-                .margin(Size::Inches(2))
-                .title("cv")
-                .build_from_html(&html)?;
+            if mdfile == "cv.md" {
+                let mut pdfout = pdf_app
+                    .builder()
+                    .orientation(Orientation::Portrait)
+                    .margin(Size::Inches(2))
+                    .title("cv")
+                    .build_from_html(&html)?;
 
-            let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(&mdfile);
-            pdf_path.set_extension("pdf");
-            pdfout.save(pdf_path)?;
+                let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(&mdfile);
+                pdf_path.set_extension("pdf");
+                pdfout.save(pdf_path)?;
 
-            html.push_str(&Layout::footer());
+                html.push_str(Layout::body(&body).as_str());
+            } else {
+                html.push_str(&Layout::header());
+                html.push_str(Layout::body(&body).as_str());
+                html.push_str(&Layout::footer());
+            }
 
             // the comparison is possible as `OsString` implements `PartialEq<&str>` trait
             if mdfile == "index.md" {

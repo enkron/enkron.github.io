@@ -47,9 +47,9 @@ impl Site {
             // PDF creation accures here hence a final document won't contain the footer in it's body
             let mut pdfout = pdf_app
                 .builder()
-                .orientation(Orientation::Landscape)
+                .orientation(Orientation::Portrait)
                 .margin(Size::Inches(2))
-                .title("test_pdf_out_1")
+                .title("cv")
                 .build_from_html(&html)
                 .expect("failed to build pdf");
 

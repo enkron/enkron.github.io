@@ -45,9 +45,9 @@ impl Site {
             let mut html = String::new();
             html.push_str(&Layout::header());
             html.push_str(Layout::body(&body).as_str());
-            html.push_str(&Layout::footer());
 
             // WIP
+            // PDF creation accures here hence a final document won't contain the footer in it's body
             let mut pdfout = pdf_app
                 .builder()
                 .orientation(Orientation::Landscape)
@@ -61,6 +61,8 @@ impl Site {
 
             pdfout.save(pdf_path).expect("failed to save foo.pdf");
             // WIP
+
+            html.push_str(&Layout::footer());
 
             // the comparison is possible as `OsString` implements `PartialEq<&str>` trait
             if mdfile == "index.md" {

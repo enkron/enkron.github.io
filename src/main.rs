@@ -11,7 +11,7 @@ use wkhtmltopdf::{Orientation, PdfApplication, Size};
 mod rend;
 use rend::Layout;
 
-const CONTENT_DIR: &str = "content";
+const CONTENT_DIR: &str = "in";
 const DOWNLOAD_DIR: &str = "download";
 const PUBLIC_DIR: &str = "pub";
 
@@ -30,10 +30,8 @@ impl Site {
             .filter_map(|entry| Some(entry.ok()?.file_name().to_owned()))
             .collect();
 
-        // WIP
         fs::create_dir_all(DOWNLOAD_DIR)?;
         let pdf_app = PdfApplication::new().expect("Failed to init PDF application");
-        // WIP
 
         for mdfile in &mdfiles {
             let md = fs::read_to_string(Path::new(CONTENT_DIR).join(mdfile))?;
@@ -46,7 +44,6 @@ impl Site {
             html.push_str(&Layout::header());
             html.push_str(Layout::body(&body).as_str());
 
-            // WIP
             // PDF creation accures here hence a final document won't contain the footer in it's body
             let mut pdfout = pdf_app
                 .builder()
@@ -58,9 +55,7 @@ impl Site {
 
             let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(&mdfile);
             pdf_path.set_extension("pdf");
-
             pdfout.save(pdf_path).expect("failed to save foo.pdf");
-            // WIP
 
             html.push_str(&Layout::footer());
 

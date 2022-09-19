@@ -17,6 +17,9 @@ impl Layout {
             <link rel="stylesheet" href="/css/styles.css">
             <link rel="stylesheet" href="/web/hack.css">
             <title>diy site. from {}</title>
+            <nav>
+            <a href="/">home</a>
+            </nav>
             </head>"#,
             github_ref_name
         )
@@ -55,9 +58,6 @@ impl Layout {
             <body>
             <div id="page-container">
             <div id="content-wrap">
-            <nav>
-            <a href="/">home</a>
-            </nav>
             <br />
             {}
             </body>"#,

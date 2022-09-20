@@ -61,12 +61,12 @@ impl Site {
         Ok(())
     }
 
-    // Convert provided Markdown file to PDF format and place it in download directory.
-    fn export(f: &str) -> Result<(), anyhow::Error> {
+    // Convert provided Markdown file to PDF format
+    fn export<P: AsRef<Path>>(f: P) -> Result<(), anyhow::Error> {
         fs::create_dir_all(DOWNLOAD_DIR)?;
         let pdf_app = PdfApplication::new()?;
 
-        let md = fs::read_to_string(Path::new(CONTENT_DIR).join(f))?;
+        let md = fs::read_to_string(Path::new(CONTENT_DIR).join(&f))?;
         let parser = Parser::new_ext(&md, Options::all());
 
         let mut body = String::new();

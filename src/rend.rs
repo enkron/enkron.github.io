@@ -7,20 +7,21 @@ impl Layout {
         };
 
         format!(
-            r#"<!DOCTYPE html>
-            <html lang="en-US">
-        
-            <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <link rel="stylesheet" type="text/css" href="/css/main.css" />
-            <link rel="stylesheet" href="/css/styles.css">
-            <link rel="stylesheet" href="/web/hack.css">
-            <title>diy site. from {}</title>
-            <nav>
-            <a href="/">home</a>
-            </nav>
-            </head>"#,
+            r#"
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="/css/main.css" />
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/web/hack.css">
+<title>diy site. from {}</title>
+<nav>
+<a href="/">home</a>
+</nav>
+</head>"#,
             github_ref_name
         )
     }
@@ -38,14 +39,14 @@ impl Layout {
 
         format!(
             r#"
-            </div>
-            <footer id="footer">
-            <p>build {}: {}</p>
-            <p>updated: {}</p>
-            </footer>
-            </div>
-         
-            </html>"#,
+</div>
+<footer id="footer">
+<p>build {}: {}</p>
+<p>updated: {}</p>
+</footer>
+</div>
+
+</html>"#,
             github_run_id,
             github_sha,
             chrono::offset::Utc::now(),
@@ -55,12 +56,12 @@ impl Layout {
     pub fn body(body: &str) -> String {
         format!(
             r#"
-            <body>
-            <div id="page-container">
-            <div id="content-wrap">
-            <br />
-            {}
-            </body>"#,
+<body>
+<div id="page-container">
+<div id="content-wrap">
+<br />
+{}
+</body>"#,
             body
         )
     }

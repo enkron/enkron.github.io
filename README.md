@@ -6,6 +6,7 @@ Implemented using Rust (actually not implemented at all).
     A[content in Markdown]-->B[static site generator];
     C[HTML templates]-->B;
     B-->D[index.html];
+    B-->E[PDF files];
 ```
 
 # CI/CD

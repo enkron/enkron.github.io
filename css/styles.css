@@ -1,13 +1,5 @@
-body {
-    margin: 0;
-    line-height: 1.5;
+code {
     font-family: Hack, monospace;
-}
-
-footer {
-    line-height: 1.5;
-    font-family: Hack, monospace;
-    font-size: 10px;
 }
 
 nav {
@@ -16,17 +8,33 @@ nav {
     font-size: 10px;
 }
 
-code {
-    font-family: Hack, monospace;
-}
-
 h1 {
     text-align: left;
     font-family: Hack, monospace;
-    font-size: 16px;
+    font-size: 18px;
 }
 
 h2 {
     text-align: left;
     font-family: Hack, monospace;
+    font-size: 16px;
+}
+
+h3 {
+    text-align: left;
+    font-family: Hack, monospace;
+    font-size: 14px;
+}
+
+body {
+    margin: 0;
+    line-height: 1.5;
+    font-family: Hack, monospace;
+    font-size: 12px;
+}
+
+footer {
+    line-height: 1.5;
+    font-family: Hack, monospace;
+    font-size: 10px;
 }

@@ -77,7 +77,7 @@ impl Site {
         let mut pdfout = pdf_app
             .builder()
             .orientation(Orientation::Portrait)
-            .margin(Size::Inches(2))
+            .margin(Size::Millimeters(20))
             .title("cv")
             .build_from_html(&html)?;
 

@@ -68,6 +68,7 @@ impl Site {
         fs::create_dir_all(DOWNLOAD_DIR)?;
 
         let md = fs::read_to_string(Path::new(CONTENT_DIR).join(&f))?;
+        // Somehow Rust's adapters breaks `md`'s structure and resulting PDF looks bad
         //let md = md.lines().skip(1).collect::<String>(); // Experimental
         let parser = Parser::new_ext(&md, Options::all());
 

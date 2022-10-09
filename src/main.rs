@@ -66,13 +66,9 @@ impl Site {
     // Convert provided Markdown file to PDF format
     fn export<P: AsRef<Path>>(f: P) -> Result<(), anyhow::Error> {
         fs::create_dir_all(DOWNLOAD_DIR)?;
-        let pdf_app = PdfApplication::new()?;
 
-        //let md = fs::read_to_string(Path::new(CONTENT_DIR).join(&f))?;
-        let md = fs::read_to_string(Path::new(CONTENT_DIR).join(&f))?
-            .lines()
-            .skip(1)
-            .collect::<String>();
+        let md = fs::read_to_string(Path::new(CONTENT_DIR).join(&f))?;
+        //let md = md.lines().skip(1).collect::<String>(); // Experimental
         let parser = Parser::new_ext(&md, Options::all());
 
         let mut body = String::new();
@@ -80,7 +76,7 @@ impl Site {
         let mut html = String::new();
         html.push_str(Layout::body(&body).as_str());
 
-        let mut pdfout = pdf_app
+        let mut pdf = PdfApplication::new()?
             .builder()
             .orientation(Orientation::Portrait)
             .margin(Size::Millimeters(20))
@@ -89,7 +85,7 @@ impl Site {
 
         let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(&f);
         pdf_path.set_extension("pdf");
-        pdfout.save(pdf_path)?;
+        pdf.save(pdf_path)?;
 
         Ok(())
     }

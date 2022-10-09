@@ -42,17 +42,19 @@ impl Site {
             html.push_str(Layout::body(&body).as_str());
             html.push_str(&Layout::footer());
 
-            // the comparison is possible as `OsString` implements `PartialEq<&str>` trait
-            if mdfile == "index.md" {
-                let mut mdfile = PathBuf::from(mdfile);
-                mdfile.set_extension("html");
-                fs::write(&mdfile, html)?;
-            } else {
-                fs::create_dir_all(PUBLIC_DIR)?;
-
-                let mut mdfile = PathBuf::from(PUBLIC_DIR).join(mdfile);
-                mdfile.set_extension("html");
-                fs::write(&mdfile, html)?;
+            let mdfile = mdfile.to_str().unwrap(); // Try to convert OsString to &str
+            match mdfile {
+                "index.md" => {
+                    let mut mdfile = PathBuf::from(mdfile);
+                    mdfile.set_extension("html");
+                    fs::write(&mdfile, html)?;
+                }
+                _ => {
+                    fs::create_dir_all(PUBLIC_DIR)?;
+                    let mut mdfile = PathBuf::from(PUBLIC_DIR).join(mdfile);
+                    mdfile.set_extension("html");
+                    fs::write(&mdfile, html)?;
+                }
             }
         }
 

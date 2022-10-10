@@ -15,6 +15,12 @@ jobs:
           sh rustup.sh -y
           rustup --version
 
+      - name: install and switch to rustup's nightly toolchain
+        run: |
+          rustup toolchain install nightly
+          rustup run nightly rustc --version
+          rustup default nightly
+
       - name: install `wkhtmltopdf` tool
         run: |
           wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb

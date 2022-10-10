@@ -33,5 +33,5 @@ servers, administering and configuring Linux hosts (authentication, logging,
 cleanup, provisioning new VMs and containers, networking problems etc),
 administering Atlassian stack (JIRA, Confluence, Bitbucket).
 
-Many thanks,
+Many thanks,<br>
 Sergei

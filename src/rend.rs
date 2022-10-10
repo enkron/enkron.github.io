@@ -29,7 +29,7 @@ impl Layout {
 <meta name="theme-color" content="\#ffffff">
 <nav>
 <a href="/">home</a>
-<a href="/download/cv.pdf">export cv</a>
+<a href="/pub/cv.html">cv</a>
 </nav>
 </head>"#,
             github_ref_name

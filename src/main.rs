@@ -1,4 +1,5 @@
 #![warn(clippy::all, clippy::pedantic)]
+#![feature(string_remove_matches)]
 use pulldown_cmark::{self, Options, Parser};
 use std::{
     ffi::OsString,
@@ -76,6 +77,7 @@ impl Site {
         pulldown_cmark::html::push_html(&mut body, parser);
         let mut html = String::new();
         html.push_str(Layout::body(&body).as_str());
+        html.remove_matches("[export to pdf](/download/cv.pdf)\n");
 
         let mut pdf = PdfApplication::new()?
             .builder()

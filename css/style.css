@@ -38,3 +38,10 @@ footer {
     font-family: Hack, monospace;
     font-size: 10px;
 }
+
+p {
+  max-width: 80ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

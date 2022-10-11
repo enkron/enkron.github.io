@@ -27,9 +27,16 @@ impl Layout {
 <meta name="msapplication-TileColor" content="\#da532c">
 <meta name="msapplication-config" content="/favicon/browserconfig.xml">
 <meta name="theme-color" content="\#ffffff">
-<nav>
-<a href="/">home</a>
-<a href="/pub/cv.html">cv</a>
+<nav class="navbar">
+<div class="logo">tree</div>
+<ul class="nav-links">
+<input type="checkbox" id="checkbox_toggle" />
+<label for="checkbox_toggle" class="hamburger">&\#9776;</label>
+<div class="menu">
+<li><a href="/">home</a></li>
+<li><a href="/pub/cv.html">cv</a></li>
+</div>
+</ul>
 </nav>
 </head>"#,
             github_ref_name

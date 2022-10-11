@@ -1,3 +1,9 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 code {
     font-family: Hack, monospace;
 }
@@ -27,7 +33,6 @@ h3 {
 }
 
 body {
-    margin: 0;
     line-height: 1.5;
     font-family: Hack, monospace;
     font-size: 12px;
@@ -41,7 +46,45 @@ footer {
 
 p {
   max-width: 80ch;
-  /* overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap; */
+}
+
+a {
+    text-decoration: none;
+}
+
+li {
+    list-style: none;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: teal;
+    color: #fff;
+}
+
+.nav-links a {
+    color: #fff;
+}
+
+.logo {
+    font-size: 32px;
+}
+
+.menu {
+    display: flex;
+    gap: 1em;
+    font-size: 14px;
+}
+
+.menu li:hover {
+    background-color: #4c9e9e;
+    border-radius: 5px;
+    transition: 0.3s ease;
+}
+
+.menu li {
+    padding: 5px 14px;
 }

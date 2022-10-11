@@ -1,17 +1,5 @@
-* {
-    margin: 0;
-    /* padding: 0; */
-    box-sizing: border-box;
-}
-
 code {
     font-family: Hack, monospace;
-}
-
-nav {
-    font-family: Hack, monospace;
-    text-align: left;
-    font-size: 10px;
 }
 
 h1 {
@@ -33,6 +21,7 @@ h3 {
 }
 
 body {
+    margin: 0;
     line-height: 1.5;
     font-family: Hack, monospace;
     font-size: 12px;
@@ -45,46 +34,62 @@ footer {
 }
 
 p {
-  max-width: 80ch;
+    max-width: 80ch;
 }
 
 a {
     text-decoration: none;
 }
 
-li {
-    list-style: none;
+.navigation {
+    background: #4682b4;
 }
 
-.navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px;
-    background-color: teal;
-    color: #fff;
-}
-
-.nav-links a {
-    color: #fff;
+.navigation ul {
+    display: inline-block;
 }
 
 .logo {
-    font-size: 16px;
+    float: left;
+    margin-top: 10px;
+    margin-left: 10px;
 }
 
-.menu {
-    display: flex;
-    gap: 1em;
-    font-size: 14px;
+nav {
+    font-family: Hack, monospace;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
 }
 
-.menu li:hover {
-    background-color: #4c9e9e;
-    border-radius: 5px;
-    transition: 0.3s ease;
+ul {
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
 }
 
-.menu li {
-    padding: 5px 14px;
+li {
+    color: #ffffff;
+    background: #4682b4;
+    display: block;
+    float: left;
+    padding: 1rem;
+    position: relative;
+    text-decoration: none;
+    transition-duration: 0.5s;
+}
+  
+li a {
+    color: #ffffff;
+    padding: 10px;
+}
+
+li:hover,
+li:focus-within {
+    background: #000000;
+    cursor: pointer;
+}
+
+li:focus-within a {
+    outline: none;
 }

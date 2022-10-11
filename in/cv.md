@@ -20,3 +20,27 @@
 <p style="text-align:left;">
 	<a href="https://enkron.org">enkron.org</a>
 </p>
+
+## About
+
+### Summary
+
+Devops engineer with a bachelor's degree in CS and near the five years of
+experience in some technologies and programming languages.
+I mainly act in a devops field: from automation of routine processes using
+scripting languages like Python and Bash to develop and maintain reliable
+systems for big data processing in cloud platforms (in particular AWS).
+I also have a great interest in systems programming: especially the development
+in Rust.
+
+### Profile
+
+### Objective
+
+## Hard skills
+
+## Work Experience
+
+## Education
+
+## Languages

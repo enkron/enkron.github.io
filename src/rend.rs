@@ -31,7 +31,7 @@ impl Layout {
 <div class="logo">tree</div>
 <ul class="nav-links">
 <input type="checkbox" id="checkbox_toggle" />
-<label for="checkbox_toggle" class="hamburger">&\#9776;</label>
+<label for="checkbox_toggle" class="hamburger">&#9776;</label>
 <div class="menu">
 <li><a href="/">home</a></li>
 <li><a href="/pub/cv.html">cv</a></li>

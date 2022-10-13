@@ -28,17 +28,11 @@ impl Layout {
 <meta name="msapplication-config" content="/favicon/browserconfig.xml">
 <meta name="theme-color" content="\#ffffff">
 <nav role="navigation" class="navigation">
-<img class="logo" src="/favicon/favicon-32x32.png" alt="-__-"/>
-<ul>
-<li><a href="/">home</a></li>
-<li><a href="/pub/cv.html">cv</a></li>
-<li><a href="/pub/future.html">future</a>
-<ul class="dropdown">
-<li><a href="/pub/subfuture1.html">subfuture1</a></li>
-<li><a href="/pub/subfuture2.html">subfuture2</a></li>
-</ul>
-</li>
-</ul>
+    <img class="logo" src="/favicon/favicon-32x32.png" alt="-__-"/>
+    <ul>
+        <li><a href="/">home</a></li>
+        <li><a href="/pub/cv.html">cv</a></li>
+    </ul>
 </nav>
 </head>"#,
             github_ref_name

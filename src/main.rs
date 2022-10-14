@@ -1,5 +1,4 @@
 #![warn(clippy::all, clippy::pedantic)]
-#![feature(string_remove_matches)]
 use pulldown_cmark::{self, Options, Parser};
 use std::{
     ffi::OsString,
@@ -7,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use walkdir::WalkDir;
-use wkhtmltopdf::{Orientation, PdfApplication, Size};
+use wkhtmltopdf::{Orientation, PageSize, PdfApplication, Size};
 
 mod rend;
 use rend::Layout;
@@ -77,13 +76,13 @@ impl Site {
         pulldown_cmark::html::push_html(&mut body, parser);
         let mut html = String::new();
         html.push_str(Layout::body(&body).as_str());
-        html.remove_matches("[export to pdf](/download/cv.pdf)\n");
 
         let mut pdf = PdfApplication::new()?
             .builder()
+            .page_size(PageSize::A4)
             .orientation(Orientation::Portrait)
-            .margin(Size::Millimeters(20))
-            .title("cv")
+            .margin(Size::Millimeters(10))
+            .title("sbelokon")
             .build_from_html(&html)?;
 
         let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(&f);

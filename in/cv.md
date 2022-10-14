@@ -37,11 +37,9 @@ in Rust.
 
 ## Hard skills
 
-### Languages (familiar)
-
-### Languages (proficient)
-
-### Tools
+**languages (familiar)**
+**languages (proficient)**
+**tools**
 
 ## Work Experience
 

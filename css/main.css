@@ -7,19 +7,6 @@
     padding-bottom: 2.5rem;
 }
 
-#footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 2.5rem;
-    font-family: Hack, monospace;
-    font-size: 12px;
-    font-weight: bold;
-    text-align: right;
-    background: #4682b4;
-    color: #ffffff;
-}
-
 code {
     font-family: Hack, monospace;
 }
@@ -51,8 +38,16 @@ body {
 
 footer {
     line-height: 1.5;
+    font-size: 12px;
     font-family: Hack, monospace;
-    font-size: 10px;
+    font-weight: bold;
+    text-align: right;
+    background: #4682b4;
+    color: #ffffff;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 2.5rem;
 }
 
 p {

@@ -38,6 +38,19 @@ impl Layout {
         )
     }
 
+    pub fn body(body: &str) -> String {
+        format!(
+            r#"
+<body>
+    <div id="page-container">
+    <div id="content-wrap">
+    <br />
+    {}
+</body>"#,
+            body
+        )
+    }
+
     pub fn footer() -> String {
         let github_run_id = match std::env::var("GITHUB_RUN_NUMBER") {
             Ok(v) => v,
@@ -53,8 +66,8 @@ impl Layout {
             r#"
 </div>
 <footer id="footer">
-<p>build {}: {}</p>
-<p>updated: {}</p>
+    <p>build {}: {}</p>
+    <p>updated: {}</p>
 </footer>
 </div>
 
@@ -62,19 +75,6 @@ impl Layout {
             github_run_id,
             github_sha,
             chrono::offset::Utc::now(),
-        )
-    }
-
-    pub fn body(body: &str) -> String {
-        format!(
-            r#"
-<body>
-<div id="page-container">
-<div id="content-wrap">
-<br />
-{}
-</body>"#,
-            body
         )
     }
 }

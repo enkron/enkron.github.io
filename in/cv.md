@@ -23,7 +23,7 @@
 
 ### Summary
 
-Devops engineer with a bachelor's degree in CS and near the five years of
+Devops engineer with a bachelor\'s degree in CS and near the five years of
 experience in some technologies and programming languages.
 I mainly act in a devops field: from automation of routine processes using
 scripting languages like Python and Bash to develop and maintain reliable
@@ -37,9 +37,9 @@ in Rust.
 
 ## Hard skills
 
-**languages (familiar)**
-**languages (proficient)**
-**tools**
+**languages (familiar)**<br>
+**languages (proficient)**<br>
+**tools**<br>
 
 ## Work Experience
 
@@ -59,7 +59,7 @@ deployment Confluence instances to the stage and production environments.
 Also was deploying and troubleshooting Bitbucket’s mirror farm.  Our team has
 created CI/CD pipelines using Buildbot (not very popular solution).
 
-I’ve also developed CLI utility using Python for automatic migration from one
+I\'ve also developed CLI utility using Python for automatic migration from one
 CRM system to another (Salesforce to JIRA) in a fairly short period of time.
 
 And of course my daily duties included monitoring the state of the servers,
@@ -84,7 +84,7 @@ cgroups, systemd, LVM etc).  As a operation team member I was also involved
 into communication with the customers.
 
 After promotion to the Devops engineer role I was developing CI/CD pipelines
-for customers' applications which exploited big data platform using Jenkins,
+for customers\' applications which exploited big data platform using Jenkins,
 Ansible, Python, Gitlab and Bash.
 
 Modeled, developed and maintained AWS CloudFormation templates for managing and
@@ -103,12 +103,12 @@ Provided backup and disaster recovery strategies for infrastructure (with AWS
 capabilities: EBS snapshots, RDS multi A-Z, S3 cross-region replication etc).
 
 Containerized custom application for big data processing using Docker. There
-was a request for storing all components in a single container, that's
-absolutely contradicts Docker's paradigm. Nevertheless build process included
+was a request for storing all components in a single container, that\'s
+absolutely contradicts Docker\'s paradigm. Nevertheless build process included
 configuration of the application itself and provisioning and configuration
 database (Postgresql). The total weight of the container was quite large (~4.29
 GB) and our team planned to split the application into separate services but
-unfortunately I didn't see the final result as I finished working for the
+unfortunately I didn\'t see the final result as I finished working for the
 company by that time.
 
 <p style="text-align:left;">

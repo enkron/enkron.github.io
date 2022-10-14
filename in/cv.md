@@ -53,6 +53,7 @@ in Rust.
     </span>
 </p>
 <br>
+
 I dealt with bare-metal servers rather than the now familiar cloud solutions.
 To automate routine processes I was creating Ansible playbooks for upgrade and
 deployment Confluence instances to the stage and production environments.
@@ -76,6 +77,7 @@ Atlassian stack (JIRA, Confluence, Bitbucket).
     </span>
 </p>
 <br>
+
 Started as a support engineer in a big data field.  Our team was responsible
 for keeping the distributed data processing clusters up and running (Hadoop,
 Hive, Impala, Spark, HBase, Zookeper, Apache Kafka). Also this position
@@ -119,6 +121,7 @@ company by that time.
     </span>
 </p>
 <br>
+
 Studied key principles of programming (Algorithms and data structures),
 software testing principles, agile software development models.
 

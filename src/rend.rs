@@ -15,7 +15,6 @@ impl Layout {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="/css/main.css" type="text/css">
-<link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/web/hack.css">
 <title>enkron's junkyard (built from {} branch)</title>
 <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">

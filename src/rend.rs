@@ -27,7 +27,9 @@ impl Layout {
 <meta name="msapplication-config" content="/favicon/browserconfig.xml">
 <meta name="theme-color" content="\#ffffff">
 <nav role="navigation" class="navigation">
-    <img class="logo" src="/favicon/favicon-32x32.png" alt="-__-"/>
+    <a href="/">
+        <img class="logo" src="/favicon/favicon-32x32.png" alt="-__-"/>
+    </a>
     <ul>
         <li><a href="/">home</a></li>
         <li><a href="/pub/cv.html">cv</a></li>
@@ -65,9 +67,11 @@ impl Layout {
         format!(
             r#"
 </div>
-<footer id="footer">
-    <p>build {}: {}</p>
-    <p>updated: {}</p>
+<footer>
+    <div class="footer">
+        <p>build {}: {}</p>
+        <p>updated: {}</p>
+    </div>
 </footer>
 </div>
 

@@ -60,7 +60,7 @@ Impala, Spark, Zookeper, Apache Kafka
 <p style="text-align:left;">
     <b>onsemi (full-time)</b>
     <span style="float:right;">
-        Nov 2021 - Oct 2022 (1 yr)<br>
+        <b>Nov 2021 - Oct 2022 (1 yr)</b><br>
         St Petersburg City, Russia
     </span>
 </p>
@@ -84,7 +84,7 @@ Atlassian stack (JIRA, Confluence, Bitbucket).
 <p style="text-align:left;">
     <b>EPAM Systems (full-time)</b>
     <span style="float:right;">
-        Jul 2018 - Nov 2021 (3 yrs 5 mos)<br>
+        <b>Jul 2018 - Nov 2021 (3 yrs 5 mos)</b><br>
         St Petersburg City, Russia
     </span>
 </p>
@@ -127,13 +127,10 @@ company by that time.
 
 <p style="text-align:left;">
     <b>Self-employed</b>
-    <span style="float:right;">
-        May 2016 - Jun 2018 (2 yrs 2 mos)
+    <span style="float:right; padding-right: 80px">
+        <b>May 2016 - Jun 2018 (2 yrs 2 mos)</b><br>
+        St Petersburg City, Russia
     </span>
-</p>
-<br>
-<p style="text-align:right;">
-    St Petersburg City, Russia
 </p>
 <br>
 

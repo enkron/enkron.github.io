@@ -24,8 +24,9 @@ Build stages:
 ```
 
 # render HTML into PDF
-In order to use [`wkhtmltopdf`](https://wkhtmltopdf.org) crate eponymous utility should be
-installed on a building platform.
+In order to use `wkhtmltopdf` crate eponymous utility
+[wkhtmltopdf](https://wkhtmltopdf.org) should be installed on a building
+platform.
 
 ## Arch Linux
 ```bash

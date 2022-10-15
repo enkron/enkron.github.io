@@ -38,8 +38,22 @@ in Rust.
 ## Hard skills
 
 **languages (familiar)**<br>
+Assembly (x86_64), C, Java, Groovy, Rust
+
 **languages (proficient)**<br>
+Python, Bash
+
 **tools**<br>
+Jenkins, Buildbot, Git, Docker, Docker Compose, LXC, Kerberos, sssd,
+Ansible, Nginx, BIND, systemd, SSH, LVM, Vim
+
+**databases**<br>
+PostgreSQL, MySQL, Apache HBase
+
+**misc**<br>
+AWS (CodePipeline, EC2, RDS, EBS, CF, S3, VPC, CodeCommit), JIRA,
+Confluence, Salesforce, jFrog Artifactory, Hadoop, Apache Tomcat, Hive,
+Impala, Spark, Zookeper, Apache Kafka
 
 ## Work Experience
 

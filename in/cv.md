@@ -128,7 +128,7 @@ company by that time.
 <p style="text-align:left;">
     <b>Self-employed</b>
     <span style="float:right;">
-        <b>May 2016 - Jun 2018 (2 yrs 2 mos)
+        May 2016 - Jun 2018 (2 yrs 2 mos)
     </span>
 </p>
 <br>

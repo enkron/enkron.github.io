@@ -62,7 +62,7 @@ Impala, Spark, Zookeper, Apache Kafka
     <span style="float:right;">
         <b>Nov 2021 - Oct 2022</b><br>
         <b>(1 yr)</b><br>
-        St Petersburg City, Russia
+        St Petersburg City, Russia<br>
     </span>
 </p>
 <br>
@@ -87,7 +87,7 @@ Atlassian stack (JIRA, Confluence, Bitbucket).
     <span style="float:right;">
         <b>Jul 2018 - Nov 2021</b><br>
         <b>(3 yrs 5 mos)</b><br>
-        St Petersburg City, Russia
+        St Petersburg City, Russia<br>
     </span>
 </p>
 <br>
@@ -132,7 +132,7 @@ company by that time.
     <span style="float:right;">
         <b>May 2016 - Jun 2018</b><br>
         <b>(2 yrs 2 mos)</b><br>
-        St Petersburg City, Russia
+        St Petersburg City, Russia<br>
     </span>
 </p>
 <br>

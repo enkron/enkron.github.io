@@ -84,7 +84,7 @@ Atlassian stack (JIRA, Confluence, Bitbucket).
 <p style="text-align:left;">
     <b>EPAM Systems (full-time)</b>
     <span style="float:right;">
-        <b>Jul 2018 - Nov 2021 (3 yrs 5 mos)</b><br>
+        Jul 2018 - Nov 2021 (3 yrs 5 mos)
         St Petersburg City, Russia
     </span>
 </p>

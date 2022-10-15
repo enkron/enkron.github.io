@@ -31,9 +31,9 @@ systems for big data processing in cloud platforms (in particular AWS).
 I also have a great interest in systems programming: especially the development
 in Rust.
 
-### Profile
-
 ### Objective
+Work in areas related to software engineering: kernel/user space,
+embedded systems, Devops or cybersec
 
 ## Hard skills
 

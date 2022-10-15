@@ -128,14 +128,12 @@ company by that time.
 <p style="text-align:left;">
     <b>Self-employed</b>
     <span style="float:right;">
-        <b>May 2016 - Jun 2018 (2 yrs 2 mos)</b>
+        <b>May 2016 - Jun 2018 (2 yrs 2 mos)
     </span>
 </p>
 <br>
-<p>
-    <span style="float:right;">
-        St Petersburg City, Russia
-    </span>
+<p style="text-align:right;">
+    St Petersburg City, Russia
 </p>
 <br>
 

@@ -1,4 +1,4 @@
-# [Sergei Belokon](/download/cv.pdf)
+# [Sergei Belokon](/download/sbelokon.pdf)
 
 <br>
 <p style="text-align:left;">

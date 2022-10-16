@@ -49,6 +49,7 @@ impl Site {
                     mdfile.set_extension("html");
                     fs::write(&mdfile, html)?;
                 }
+
                 _ => {
                     fs::create_dir_all(PUBLIC_DIR)?;
                     let mut mdfile = PathBuf::from(PUBLIC_DIR).join(mdfile);
@@ -58,18 +59,21 @@ impl Site {
             }
         }
 
-        Self::export("cv.md")?;
+        fs::create_dir_all(DOWNLOAD_DIR)?;
+        let pdf_app = PdfApplication::new()?;
+
+        Self::export("cv.md", "sbelokon", &pdf_app)?;
+        Self::export("index.md", "cover", &pdf_app)?;
 
         Ok(())
     }
 
-    // Convert provided Markdown file to PDF format
-    fn export<P: AsRef<Path>>(f: P) -> Result<(), anyhow::Error> {
-        fs::create_dir_all(DOWNLOAD_DIR)?;
-
-        let md = fs::read_to_string(Path::new(CONTENT_DIR).join(&f))?;
-        // Somehow Rust's adapters breaks `md`'s structure and resulting PDF looks bad
-        //let md = md.lines().skip(1).collect::<String>(); // Experimental
+    fn export<P: AsRef<Path>>(
+        f_in: P,
+        f_out: P,
+        pdf_app: &PdfApplication,
+    ) -> Result<(), anyhow::Error> {
+        let md = fs::read_to_string(Path::new(CONTENT_DIR).join(f_in))?;
         let parser = Parser::new_ext(&md, Options::all());
 
         let mut body = String::new();
@@ -77,15 +81,16 @@ impl Site {
         let mut html = String::new();
         html.push_str(Layout::body(&body).as_str());
 
-        let mut pdf = PdfApplication::new()?
-            .builder()
+        let mut pdf_builder = pdf_app.builder();
+        pdf_builder
             .page_size(PageSize::A4)
             .orientation(Orientation::Portrait)
             .margin(Size::Millimeters(10))
-            .title("sbelokon")
-            .build_from_html(&html)?;
+            .title("sbelokon");
 
-        let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(&f);
+        let mut pdf = pdf_builder.build_from_html(&html)?;
+        let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(f_out);
+
         pdf_path.set_extension("pdf");
         pdf.save(pdf_path)?;
 

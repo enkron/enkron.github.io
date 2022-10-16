@@ -17,6 +17,9 @@
 
 <p style="text-align:left;">
     <a href="https://enkron.org">enkron.org</a>
+    <span style="float:right;">
+        <a href="https://t.me/enkron">t.me/enkron</a>
+    </span>
 </p>
 
 ## About

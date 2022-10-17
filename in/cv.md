@@ -3,21 +3,21 @@
 <br>
 <p style="text-align:left;">
     <a href="https://www.google.com/maps/place/St+Petersburg,+Russia/@59.940117,29.8145062,10z">St. Petersburg</a>
-    <span style="float:right;">
+    <span style="float:right; padding-right:10px">
         <a href="https://github.com/enkron">github.com/enkron</a>
     </span>
 </p>
 
 <p style="text-align:left;">
     <a href="mailto:srj.belokon@gmail.com">srj.belokon@gmail.com</a>
-    <span style="float:right;">
+    <span style="float:right; padding-right:10px">
         <a href="https://linkedin.com/in/sbelokon">linkedin.com/in/sbelokon</a>
     </span>
 </p>
 
 <p style="text-align:left;">
     <a href="https://enkron.org">enkron.org</a>
-    <span style="float:right;">
+    <span style="float:right; padding-right:10px">
         <a href="https://t.me/enkron">t.me/enkron</a>
     </span>
 </p>
@@ -62,7 +62,7 @@ Impala, Spark, Zookeper, Apache Kafka
 
 <p style="text-align:left;">
     <b><u>onsemi (full-time)</u></b>
-    <span style="float:right;">
+    <span style="float:right; padding-right:10px">
         <b>Nov 2021 - Oct 2022 (1 yr)</b><br>
         St Petersburg City, Russia
     </span>
@@ -86,7 +86,7 @@ Atlassian stack (JIRA, Confluence, Bitbucket).
 
 <p style="text-align:left;">
     <b><u>EPAM Systems (full-time)</u></b>
-    <span style="float:right;">
+    <span style="float:right; padding-right:10px">
         <b>Jul 2018 - Nov 2021 (3 yrs 5 mos)</b><br>
         St Petersburg City, Russia
     </span>
@@ -130,7 +130,7 @@ company by that time.
 
 <p style="text-align:left;">
     <b><u>self-employed</u></b>
-    <span style="float:right;">
+    <span style="float:right; padding-right:10px">
         <b>May 2016 - Jun 2018 (2 yrs 2 mos)</b><br>
         St Petersburg City, Russia
     </span>

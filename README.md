@@ -1,3 +1,7 @@
+<div align="center">
+[![Build Status](https://github.com/enkron/enkron.github.io/actions/workflows/build_site/badge.svg?branch=main)](https://github.com/enkron/enkron.github.io/actions)
+</div>
+
 # Static site generator
 Implemented using Rust (actually not implemented at all).
 

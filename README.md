@@ -1,6 +1,6 @@
 <div align="center">
 
-[![Build Status](https://github.com/enkron/enkron.github.io/workflows/build_site/badge.svg?branch=main)](https://github.com/enkron/enkron.github.io/actions)
+[![Build Status](https://github.com/enkron/enkron.github.io/actions/workflows/build_site.yml/badge.svg?branch=main)](https://github.com/enkron/enkron.github.io/actions)
 
 </div>
 

@@ -35,6 +35,7 @@ I also have a great interest in systems programming: especially the development
 in Rust.
 
 ### Objective
+
 Work in areas related to software engineering: kernel/user space,
 embedded systems, Devops or cybersec
 
@@ -47,8 +48,8 @@ Assembly (x86_64), C, Java, Groovy, Rust
 Python, Bash
 
 **tools**<br>
-Jenkins, Buildbot, Git, Docker, Docker Compose, LXC, Kerberos, sssd,
-Ansible, Nginx, BIND, systemd, SSH, LVM, Vim
+Jenkins, Git, Docker, Docker Swarm, Docker Compose, LXC, Buildbot,
+Kerberos, sssd, Ansible, Nginx, HAProxy, BIND, systemd, SSH, LVM, Vim
 
 **databases**<br>
 PostgreSQL, MySQL, Apache HBase
@@ -61,9 +62,24 @@ Impala, Spark, Zookeper, Apache Kafka
 ## Work Experience
 
 <p style="text-align:left;">
-    <b><u>onsemi (full-time)</u></b>
-    <span style="float:right; padding-right:10px">
+    <b><u><a href="https://morsemicro.com">Morse Micro</a> (full-time)</u></b>
+    <span style="float:right; width: 300px; padding-right:10px">
+        <b>Dec 2022 - Present (3 mos)</b><br>
+        Senior Wireless PHY Systems Engineer<br>
+        Sydney NSW, Australia
+    </span>
+</p>
+<br>
+
+Prototyped and implemented CI system using Docker Swarm, HAProxy, and
+Jenkins tools. Maintained current production infrastructure.
+
+
+<p style="text-align:left;">
+    <b><u><a href="https://onsemi.com">onsemi</a> (full-time)</u></b>
+    <span style="float:right; width: 300px; padding-right:10px">
         <b>Nov 2021 - Oct 2022 (1 yr)</b><br>
+        Devops engineer<br>
         St Petersburg City, Russia
     </span>
 </p>
@@ -85,9 +101,10 @@ provisioning new VMs and containers, networking problems etc), administering
 Atlassian stack (JIRA, Confluence, Bitbucket).
 
 <p style="text-align:left;">
-    <b><u>EPAM Systems (full-time)</u></b>
-    <span style="float:right; padding-right:10px">
+    <b><u><a href="https://epam.com">EPAM Systems</a> (full-time)</u></b>
+    <span style="float:right; width: 300px; padding-right:10px">
         <b>Jul 2018 - Nov 2021 (3 yrs 5 mos)</b><br>
+        Systems engineer<br>
         St Petersburg City, Russia
     </span>
 </p>
@@ -130,7 +147,7 @@ company by that time.
 
 <p style="text-align:left;">
     <b><u>self-employed</u></b>
-    <span style="float:right; padding-right:10px">
+    <span style="float:right; width: 300px; padding-right:10px">
         <b>May 2016 - Jun 2018 (2 yrs 2 mos)</b><br>
         St Petersburg City, Russia
     </span>
@@ -147,4 +164,5 @@ Peter the Great St. Petersburg Polytechnic University (SPbPU)
 ## Languages
 
 English professional working proficiency<br>
+IELTS test report form number: **22AU009114BELS468G**<br>
 Russian native

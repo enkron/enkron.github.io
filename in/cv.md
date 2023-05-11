@@ -49,7 +49,8 @@ Python, Bash
 
 **tools**<br>
 Jenkins, Git, Docker, Docker Swarm, Docker Compose, LXC, Buildbot,
-Kerberos, sssd, Ansible, Nginx, HAProxy, BIND, systemd, SSH, LVM, Vim
+Kerberos, sssd, Ansible, Nginx, HAProxy, BIND, systemd, SSH, LVM, Vim,
+make, certbot
 
 **databases**<br>
 PostgreSQL, MySQL, Apache HBase
@@ -57,23 +58,28 @@ PostgreSQL, MySQL, Apache HBase
 **misc**<br>
 AWS (CodePipeline, EC2, RDS, EBS, CF, S3, VPC, CodeCommit), JIRA,
 Confluence, Salesforce, jFrog Artifactory, Hadoop, Apache Tomcat, Hive,
-Impala, Spark, Zookeper, Apache Kafka
+Impala, Spark, Zookeper, Apache Kafka, Prometheus, Grafana, Prometheus
+AlertManager, Vagrant
 
 ## Work Experience
 
 <p style="text-align:left;">
     <b><u><a href="https://morsemicro.com">Morse Micro</a> (full-time)</u></b>
     <span style="float:right; width: 300px; padding-right:10px">
-        <b>Dec 2022 - Present (3 mos)</b><br>
+        <b>Dec 2022 - Present (5 mos)</b><br>
         Senior Wireless PHY Systems Engineer<br>
         Sydney NSW, Australia
     </span>
 </p>
 <br>
 
-Prototyped and implemented CI system using Docker Swarm, HAProxy, and
-Jenkins tools. Maintained current production infrastructure.
-
+- Prototyped and implemented CI system using Jenkins, Docker Swarm,
+  and HAProxy
+- Deployed monitoring solution with Prometheus and Grafana.
+- Configured alerting with Prometheus AlertManager and Slack
+- Implemented SSO authentication using SAML2.0 and GSuite as identity
+  provider
+- Maintained production and development infrastructures.
 
 <p style="text-align:left;">
     <b><u><a href="https://onsemi.com">onsemi</a> (full-time)</u></b>

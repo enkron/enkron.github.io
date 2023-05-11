@@ -73,10 +73,10 @@ AlertManager, Vagrant
 </p>
 <br>
 
-Prototyped and implemented CI system using Jenkins, Docker Swarm, and HAProxy.
-Deployed monitoring solution with Prometheus and Grafana.
-Configured alerting with Prometheus AlertManager and Slack.
-Implemented SSO authentication using SAML2.0 and GSuite as identity provider.
+Prototyped and implemented CI system using Jenkins, Docker Swarm, and HAProxy.<br>
+Deployed monitoring solution with Prometheus and Grafana.<br>
+Configured alerting with Prometheus AlertManager and Slack.<br>
+Implemented SSO authentication using SAML2.0 and GSuite as identity provider.<br>
 Maintained production and development infrastructures.
 
 <p style="text-align:left;">

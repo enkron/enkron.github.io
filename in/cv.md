@@ -73,13 +73,11 @@ AlertManager, Vagrant
 </p>
 <br>
 
-- Prototyped and implemented CI system using Jenkins, Docker Swarm,
-  and HAProxy
-- Deployed monitoring solution with Prometheus and Grafana.
-- Configured alerting with Prometheus AlertManager and Slack
-- Implemented SSO authentication using SAML2.0 and GSuite as identity
-  provider
-- Maintained production and development infrastructures.
+Prototyped and implemented CI system using Jenkins, Docker Swarm, and HAProxy.
+Deployed monitoring solution with Prometheus and Grafana.
+Configured alerting with Prometheus AlertManager and Slack.
+Implemented SSO authentication using SAML2.0 and GSuite as identity provider.
+Maintained production and development infrastructures.
 
 <p style="text-align:left;">
     <b><u><a href="https://onsemi.com">onsemi</a> (full-time)</u></b>

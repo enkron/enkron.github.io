@@ -1,13 +1,7 @@
 pub struct Layout;
 impl Layout {
-    pub fn header() -> String {
-        let github_ref_name = match std::env::var("GITHUB_REF_NAME") {
-            Ok(v) => v,
-            Err(_) => "no GITHUB_REF_NAME variable is found".into(),
-        };
-
-        format!(
-            r#"
+    pub fn header<'a>() -> &'a str {
+        r#"
 <!DOCTYPE html>
 <html lang="en-US">
 
@@ -16,7 +10,7 @@ impl Layout {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="/css/main.css" type="text/css">
 <link rel="stylesheet" href="/web/hack.css">
-<title>enkron's junkyard (built from {} branch)</title>
+<title>enk junkyard</title>
 <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
@@ -35,9 +29,7 @@ impl Layout {
         <li><a href="/pub/cv.html">cv</a></li>
     </ul>
 </nav>
-</head>"#,
-            github_ref_name
-        )
+</head>"#
     }
 
     pub fn body(body: &str) -> String {

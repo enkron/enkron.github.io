@@ -1,7 +1,7 @@
 
 # [Hello](/download/cover.pdf)
 
-Devops engineer with a bachelor\'s degree in CS and near the five years of
+Devops engineer with a bachelor\'s degree in CS and near the six years of
 experience in some technologies and programming languages.
 I mainly act in a devops field: from automation of routine processes using
 scripting languages like Python and Bash to develop and maintain reliable

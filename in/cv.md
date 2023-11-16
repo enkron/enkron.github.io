@@ -26,7 +26,7 @@
 
 ### Summary
 
-Devops engineer with a bachelor\'s degree in CS and near the five years of
+Devops engineer with a bachelor\'s degree in CS and near the six years of
 experience in some technologies and programming languages.
 I mainly act in a devops field: from automation of routine processes using
 scripting languages like Python and Bash to develop and maintain reliable
@@ -58,8 +58,8 @@ PostgreSQL, MySQL, Apache HBase
 **misc**<br>
 AWS (CodePipeline, EC2, RDS, EBS, CF, S3, VPC, CodeCommit), JIRA,
 Confluence, Salesforce, jFrog Artifactory, Hadoop, Apache Tomcat, Hive,
-Impala, Spark, Zookeper, Apache Kafka, Prometheus, Grafana, Prometheus
-AlertManager, Vagrant
+Impala, Spark, Zookeper, Apache Kafka, Prometheus, Grafana, Grafana
+Mimir, Prometheus AlertManager, Vagrant
 
 ## Work Experience
 
@@ -67,14 +67,14 @@ AlertManager, Vagrant
     <b><u><a href="https://morsemicro.com">Morse Micro</a> (full-time)</u></b>
     <span style="float:right; width: 300px; padding-right:10px">
         <b>Dec 2022 - Present (5 mos)</b><br>
-        Senior Wireless PHY Systems Engineer<br>
+        Devops engineer<br>
         Sydney NSW, Australia
     </span>
 </p>
 <br>
 
 Prototyped and implemented CI system using Jenkins, Docker Swarm, and HAProxy.<br>
-Deployed monitoring solution with Prometheus and Grafana.<br>
+Deployed monitoring solution with Prometheus, Grafana and Grafana Mimir.<br>
 Configured alerting with Prometheus AlertManager and Slack.<br>
 Implemented SSO authentication using SAML2.0 and GSuite as identity provider.<br>
 Maintained production and development infrastructures.
@@ -114,12 +114,12 @@ Atlassian stack (JIRA, Confluence, Bitbucket).
 </p>
 <br>
 
-Started as a support engineer in a big data field.  Our team was responsible
-for keeping the distributed data processing clusters up and running (Hadoop,
-Hive, Impala, Spark, HBase, Zookeper, Apache Kafka). Also this position
-provided me an opportunity to learn Linux internals more deeply (Linux PAM,
-cgroups, systemd, LVM etc).  As a operation team member I was also involved
-into communication with the customers.
+Started as a L2 support engineer in a big data field. Our team was
+responsible for keeping the distributed data processing clusters up and
+running (Hadoop, Hive, Impala, Spark, HBase, Zookeper, Apache Kafka).
+Also this position provided me an opportunity to learn Linux internals
+more deeply (Linux PAM, cgroups, systemd, LVM etc). As a operation team
+member I was also involved into communication with the customers.
 
 After promotion to the Devops engineer role I was developing CI/CD pipelines
 for customers\' applications which exploited big data platform using Jenkins,

@@ -55,18 +55,21 @@ make, certbot
 **databases**<br>
 PostgreSQL, MySQL, Apache HBase
 
+**virtualization**<br>
+Vagrant, VirtualBox, QEMU
+
 **misc**<br>
 AWS (CodePipeline, EC2, RDS, EBS, CF, S3, VPC, CodeCommit), JIRA,
 Confluence, Salesforce, jFrog Artifactory, Hadoop, Apache Tomcat, Hive,
 Impala, Spark, Zookeper, Apache Kafka, Prometheus, Grafana, Grafana
-Mimir, Prometheus AlertManager, Vagrant
+Mimir, Prometheus AlertManager
 
 ## Work Experience
 
 <p style="text-align:left;">
     <b><u><a href="https://morsemicro.com">Morse Micro</a> (full-time)</u></b>
     <span style="float:right; width: 300px; padding-right:10px">
-        <b>Dec 2022 - Present (5 mos)</b><br>
+        <b>Dec 2022 - Present (1 yr)</b><br>
         Devops engineer<br>
         Sydney NSW, Australia
     </span>

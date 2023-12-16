@@ -67,7 +67,7 @@ jobs:
   #          path: github-pages
 
   deploy:
-    needs: build
+    #needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -124,9 +124,9 @@ jobs:
         uses: actions/deploy-pages@v3
 
   test:
-    # This is jist a stub for future unit/integration tests applied to
-    # the binary or generated site itself
-    needs: build
+    # Stub for future unit/integration tests applied to the binary or
+    # generated site itself
+    needs: deploy
     runs-on: ubuntu-latest
     steps:
 

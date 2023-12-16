@@ -60,11 +60,11 @@ jobs:
           .
 
       - name: upload artifact
-        uses: actions/upload-artifact@v4
-        #uses: actions/upload-pages-artifact@v2
-        with:
-          name: github-pages
-          path: github-pages
+        # uses: actions/upload-artifact@v4
+        # with:
+        #   name: github-pages
+        #   path: github-pages
+        uses: actions/upload-pages-artifact@v2
 
   test:
     # Stub for future unit/integration tests applied to the binary or
@@ -78,7 +78,7 @@ jobs:
           echo "GITHUB_SHA=$GITHUB_SHA"
 
   deploy:
-    needs: build
+    needs: [build, test]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

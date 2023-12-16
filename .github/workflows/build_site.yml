@@ -59,12 +59,16 @@ jobs:
           -C "$PWD"
           .
 
+      - name: check output artifact
+        shell: bash
+        run: >
+          ls -ltr
+
       - name: upload artifact
-        # uses: actions/upload-artifact@v4
-        # with:
-        #   name: github-pages
-        #   path: github-pages
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-pages
+          path: github-pages
 
   test:
     # Stub for future unit/integration tests applied to the binary or
@@ -84,6 +88,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: download the artifacth
+        uses: actions/download-artifact@v3
+        with:
+          name: github-pages
+
       - name: deploy to github pages
         id: deployment
         uses: actions/deploy-pages@v3

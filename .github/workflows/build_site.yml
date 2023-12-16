@@ -43,16 +43,18 @@ jobs:
         shell: bash
         run: >
           tar
-          --dereference --hard-dereference
-          --directory "$PWD"
-          -cvf "$PWD/github-pages"
+          -cvf github-pages
+          --dereference
+          --hard-dereference
           --exclude=.git
           --exclude=.github
           --exclude=target
+          --exclude=github-pages
+          -C "$PWD"
           .
 
       - name: upload artifact
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v4
         with:
           name: github-pages
           path: github-pages
@@ -68,6 +70,12 @@ jobs:
         run: |
           curl -L enkron.github.io
           echo "GITHUB_SHA=$GITHUB_SHA"
+
+      - name: check output certificate permissions
+        run: |
+          ls -l
+          echo '*********'
+          tar -tf github-pages
 
   deploy:
     needs: build

@@ -88,10 +88,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: download the artifacth
+      - name: download the artifact
         uses: actions/download-artifact@v3
         with:
           name: github-pages
+          path: github-pages
 
       - name: deploy to github pages
         id: deployment

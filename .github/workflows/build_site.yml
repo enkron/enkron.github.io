@@ -2,13 +2,23 @@
 name: build static site
 on:
   push:
-    branches:
-      - main
+    branches: [$default-branch]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-
       - name: install Rust toolchain
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
@@ -24,7 +34,7 @@ jobs:
       - name: install `wkhtmltopdf` tool
         run: |
           wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
-          sudo apt install -y ./wkhtmltox_0.12.6-1.focal_amd64.deb
+          sudo apt-get install -y ./wkhtmltox_0.12.6-1.focal_amd64.deb
 
       - name: checkout repository
         uses: actions/checkout@v3
@@ -33,11 +43,6 @@ jobs:
         run: |
           cargo run --release
           ls -altr
-
-      - name: cleanup
-        run: |
-          #"echo 'drop: rustup.sh' && rm rustup.sh 2>/dev/null"
-          ls
 
       - name: archive artifact
         shell: bash
@@ -54,7 +59,8 @@ jobs:
           .
 
       - name: upload artifact
-        uses: actions/upload-artifact@v4
+        #uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v2
         with:
           name: github-pages
           path: github-pages
@@ -71,17 +77,8 @@ jobs:
           curl -L enkron.github.io
           echo "GITHUB_SHA=$GITHUB_SHA"
 
-      - name: check output certificate permissions
-        run: |
-          ls -l
-          echo '*********'
-          tar -tf github-pages
-
   deploy:
     needs: build
-    permissions:
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -65,7 +65,7 @@ jobs:
           ls -ltr
 
       - name: upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: github-pages
           path: github-pages
@@ -92,7 +92,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: github-pages
-          path: github-pages
 
       - name: deploy to github pages
         id: deployment

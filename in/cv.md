@@ -50,13 +50,10 @@ Python, Bash
 **tools**<br>
 Jenkins, Git, Docker, Docker Swarm, Docker Compose, LXC, Buildbot,
 Kerberos, sssd, Ansible, Nginx, HAProxy, BIND, systemd, SSH, LVM, Vim,
-make, certbot
+make, certbot, Vagrant, VirtualBox, QEMU
 
 **databases**<br>
 PostgreSQL, MySQL, Apache HBase
-
-**virtualization**<br>
-Vagrant, VirtualBox, QEMU
 
 **misc**<br>
 AWS (CodePipeline, EC2, RDS, EBS, CF, S3, VPC, CodeCommit), JIRA,

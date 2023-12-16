@@ -85,6 +85,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: build and run the program
+        run: |
+          ls -altr
 
       - name: deploy to github pages
         id: deployment

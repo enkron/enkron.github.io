@@ -39,9 +39,9 @@ impl Layout {
                 <div id="page-container">
                 <div id="content-wrap">
                 <br />
-                {}
+                    {body}
+                </div>
             </body>"#,
-            body
         )
     }
 
@@ -58,7 +58,6 @@ impl Layout {
 
         format!(
             r#"
-            </div>
             <footer>
                 <div class="footer">
                     <p>build {}: {}</p>

@@ -38,18 +38,17 @@ impl Site {
             pulldown_cmark::html::push_html(&mut body, parser);
 
             let mut html = String::new();
-            html.push_str(&Layout::header());
+            html.push_str(Layout::header());
             html.push_str(Layout::body(&body).as_str());
             html.push_str(&Layout::footer());
 
             let mdfile = mdfile.to_str().unwrap(); // Try to convert OsString to &str
             match mdfile {
-                "index.md" => {
+                "index.md" | "cv.md" => {
                     let mut mdfile = PathBuf::from(mdfile);
                     mdfile.set_extension("html");
                     fs::write(&mdfile, html)?;
                 }
-
                 _ => {
                     fs::create_dir_all(PUBLIC_DIR)?;
                     let mut mdfile = PathBuf::from(PUBLIC_DIR).join(mdfile);

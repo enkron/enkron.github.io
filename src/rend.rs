@@ -26,7 +26,7 @@ impl Layout {
                 </a>
                 <ul>
                     <li><a href="/">home</a></li>
-                    <li><a href="/pub/cv.html">cv</a></li>
+                    <li><a href="/cv.html">cv</a></li>
                 </ul>
             </nav>
         </head>"#

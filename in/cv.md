@@ -1,4 +1,4 @@
-# [Sergei Belokon](/download/sbelokon.pdf)
+<h1><a href="/download/sbelokon.pdf" title="export to pdf">Sergei Belokon</a></h1>
 
 <br>
 <p style="text-align:left;">

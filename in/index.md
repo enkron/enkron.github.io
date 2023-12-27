@@ -1,5 +1,4 @@
-
-# [Hello](/download/cover.pdf)
+<h1><a href="/download/cover.pdf" title="export to pdf">Hello</a></h1>
 
 Devops engineer with a bachelor\'s degree in CS and near the six years of
 experience in some technologies and programming languages.

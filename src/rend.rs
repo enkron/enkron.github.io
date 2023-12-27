@@ -25,7 +25,7 @@ impl Layout {
                     <img class="logo" src="/favicon/favicon-32x32.png" alt="-__-"/>
                 </a>
                 <ul>
-                    <li><a href="/">home</a></li>
+                    <li><a href="/pub/junkyard.html">junkyard</a></li>
                     <li><a href="/cv.html">cv</a></li>
                 </ul>
             </nav>

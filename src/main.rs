@@ -42,16 +42,23 @@ impl Site {
             html.push_str(Layout::body(&body).as_str());
             html.push_str(&Layout::footer());
 
-            let mdfile = mdfile.to_str().unwrap(); // Try to convert OsString to &str
-            match mdfile {
-                "index.md" | "cv.md" => {
+            let public_dir = PathBuf::from(PUBLIC_DIR);
+            let junkyard_dir = public_dir.join("junkyard");
+            fs::create_dir_all(&junkyard_dir)?;
+
+            match mdfile.to_str() {
+                Some("index.md" | "cv.md") => {
                     let mut mdfile = PathBuf::from(mdfile);
                     mdfile.set_extension("html");
                     fs::write(&mdfile, html)?;
                 }
+                Some("junkyard.md") => {
+                    let mut mdfile = public_dir.join(mdfile);
+                    mdfile.set_extension("html");
+                    fs::write(&mdfile, html)?;
+                }
                 _ => {
-                    fs::create_dir_all(PUBLIC_DIR)?;
-                    let mut mdfile = PathBuf::from(PUBLIC_DIR).join(mdfile);
+                    let mut mdfile = junkyard_dir.join(mdfile);
                     mdfile.set_extension("html");
                     fs::write(&mdfile, html)?;
                 }

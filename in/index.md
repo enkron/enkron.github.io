@@ -8,19 +8,20 @@ systems for big data processing in cloud platforms (in particular AWS).
 I also have a great interest in systems programming: especially the development
 in Rust.
 
-Always try to keep my level of awareness of technologies up to date, hence I
-periodically read books about old but super important stuff (Linux API, data
-structures, algorithms etc) and new projects as well (Docker, Rust etc). Also
-aspire to contribute to open source software one day.
+Always try to keep my level of awareness of technologies up to date,
+hence i periodically read books about old but super important stuff
+(Linux API, data structures, algorithms &c) and new projects as well
+(Rust, WASM, Kubernetes &c). Also aspire to contribute to open source
+software one day.
 
-From the software development perspective I try to grab hands on experience by
+From the software development perspective i try to grab hands on experience by
 develop pet projects (please check my [github](https://github.com/enkron)
-account for examples).  Currently I\'m digging into the type system, data
+account for examples). Currently i\'m digging into the type system, data
 structures and references\' lifetimes. And plan to integrate concurrent/async
 programming into my daily activities.
 
-In my last work experience I dealt with bare-metal servers rather than
-the now familiar cloud solutions. To automate routine processes I was
+In my last work experience i dealt with bare-metal servers rather than
+the now familiar cloud solutions. To automate routine processes i was
 creating Ansible playbooks for upgrade and deployment Confluence
 instances to the stage and production environments. Also was deploying
 and troubleshooting Bitbucket\'s mirror farm. Our team has created CI/CD
@@ -28,7 +29,7 @@ pipelines using Buildbot (not very popular solution). Developed CLI
 utility using Python for automatic migration from one CRM system to
 another (Salesforce to JIRA) in a fairly short period of time.
 
-Also I was developing CI/CD pipelines for customers\' applications which
+Also i was developing CI/CD pipelines for customers\' applications which
 exploited big data platform using Jenkins, Ansible, Python, Gitlab and
 Bash. Modeled, developed and maintained AWS CloudFormation templates
 for managing and provisioning infrastructure as a code. Refactored and

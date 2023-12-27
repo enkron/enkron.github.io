@@ -46,23 +46,14 @@ impl Site {
             let junkyard_dir = public_dir.join("junkyard");
             fs::create_dir_all(&junkyard_dir)?;
 
-            match mdfile.to_str() {
-                Some("index.md" | "cv.md") => {
-                    let mut mdfile = PathBuf::from(mdfile);
-                    mdfile.set_extension("html");
-                    fs::write(&mdfile, html)?;
-                }
-                Some("junkyard.md") => {
-                    let mut mdfile = public_dir.join(mdfile);
-                    mdfile.set_extension("html");
-                    fs::write(&mdfile, html)?;
-                }
-                _ => {
-                    let mut mdfile = junkyard_dir.join(mdfile);
-                    mdfile.set_extension("html");
-                    fs::write(&mdfile, html)?;
-                }
-            }
+            let mut htmlfile = match mdfile.to_str() {
+                Some("index.md" | "cv.md") => PathBuf::from(mdfile),
+                Some("junkyard.md") => public_dir.join(mdfile),
+                _ => junkyard_dir.join(mdfile),
+            };
+
+            htmlfile.set_extension("html");
+            fs::write(&htmlfile, html)?;
         }
 
         fs::create_dir_all(DOWNLOAD_DIR)?;

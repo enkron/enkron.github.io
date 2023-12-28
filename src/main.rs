@@ -52,7 +52,13 @@ impl Site {
 
             let mut htmlfile = match mdfile.to_str() {
                 Some("index.md" | "cv.md") => PathBuf::from(mdfile),
-                _ => PathBuf::from(PUBLIC_DIR).join(mdfile),
+                _ => {
+                    if let Some(v) = mdfile.to_str().unwrap().split_once('-') {
+                        PathBuf::from(PUBLIC_DIR).join(v.0)
+                    } else {
+                        PathBuf::from(PUBLIC_DIR).join(mdfile)
+                    }
+                }
             };
 
             htmlfile.set_extension("html");

@@ -1,7 +1,6 @@
 #![warn(clippy::all, clippy::pedantic)]
 use pulldown_cmark::{self, Options, Parser};
 use std::{
-    ffi::OsString,
     fs,
     path::{Path, PathBuf},
 };
@@ -24,14 +23,21 @@ fn main() -> Result<(), anyhow::Error> {
 struct Site;
 impl Site {
     fn build() -> Result<(), anyhow::Error> {
-        let mdfiles: Vec<OsString> = WalkDir::new(CONTENT_DIR)
+        let mdfiles = WalkDir::new(CONTENT_DIR)
             .min_depth(1)
             .into_iter()
-            .filter_map(|entry| Some(entry.ok()?.file_name().to_owned()))
-            .collect();
+            .filter(|e| e.as_ref().unwrap().clone().into_path().is_file())
+            .map(|e| {
+                e.unwrap()
+                    .into_path()
+                    .strip_prefix(CONTENT_DIR)
+                    .unwrap()
+                    .to_owned()
+            })
+            .collect::<Vec<_>>();
 
         for mdfile in &mdfiles {
-            let md = fs::read_to_string(Path::new(CONTENT_DIR).join(mdfile))?;
+            let md = fs::read_to_string(PathBuf::from(CONTENT_DIR).join(mdfile))?;
             let parser = Parser::new_ext(&md, Options::all());
 
             let mut body = String::new();
@@ -42,14 +48,11 @@ impl Site {
             html.push_str(Layout::body(&body).as_str());
             html.push_str(&Layout::footer());
 
-            let public_dir = PathBuf::from(PUBLIC_DIR);
-            let junkyard_dir = public_dir.join("junkyard");
-            fs::create_dir_all(&junkyard_dir)?;
+            fs::create_dir_all(PathBuf::from(PUBLIC_DIR).join("entries"))?;
 
             let mut htmlfile = match mdfile.to_str() {
                 Some("index.md" | "cv.md") => PathBuf::from(mdfile),
-                Some("junkyard.md") => public_dir.join(mdfile),
-                _ => junkyard_dir.join(mdfile),
+                _ => PathBuf::from(PUBLIC_DIR).join(mdfile),
             };
 
             htmlfile.set_extension("html");
@@ -70,7 +73,7 @@ impl Site {
         f_out: P,
         pdf_app: &PdfApplication,
     ) -> Result<(), anyhow::Error> {
-        let md = fs::read_to_string(Path::new(CONTENT_DIR).join(f_in))?;
+        let md = fs::read_to_string(PathBuf::from(CONTENT_DIR).join(f_in))?;
         let parser = Parser::new_ext(&md, Options::all());
 
         let mut body = String::new();

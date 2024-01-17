@@ -1,4 +1,5 @@
 # Index
 
-Tue Dec 26 05:02:44 AM UTC 2023 [initial entry](/pub/entries/1.html)
-Wed 17 Jan 2024 02:52:33 UTC [setting up NAT based network for using with libvirt](/pub/entries/2.html)
+2023-12-26 05:02:44+00:00 [initial entry](/pub/entries/1.html)
+
+2024-01-17 06:32:14+00:00 [setting up NAT based network for using with libvirt](/pub/entries/2.html)

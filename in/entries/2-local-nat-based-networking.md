@@ -1,6 +1,18 @@
-# setting up NAT based network (WIP)
+# setting up NAT based network for using with libvirt
 
-0. disable default libvirt network
+The following steps are almost copy/paste from the [quide][1] and it
+isn\'t pretending for content originality.
+It serves for reproducing through the prism of my perception, i\'m very
+grateful to the author for the detailed analysis of this topic.
+
+The `libvirt` daemon creates default network which exploits virbr0
+bridge interface. The network has limitations as the daemon
+automatically inserts iptables rules for the particular 192.168.122.0/24
+subnet.
+
+[1]: https://jamielinux.com/docs/libvirt-networking-handbook/custom-nat-based-network.html
+
+## disable default libvirt network
 
 ```bash
 virsh net-destroy default
@@ -10,36 +22,36 @@ virsh net-undefine --network default
 
 ## virtual bridge
 
-0. create bridge network interface
+### create bridge network interface
 
 ```bash
 sudo ip link add name k8s-br0 type bridge
 ```
 
-Enable stp (Spanning Tree Protocol) on a bridge
+### enable stp (Spanning Tree Protocol) on a bridge
 
 ```bash
 sudo ip link set k8s-br0 type bridge stp_state 1
 ```
 
-1. create virtual network interface
+### create virtual network interface
 
 We need to attach virtual network interface `k8s-br0` to just created
 bridge to provide a stabe MAC address for the interface (a bridge
 inherits MAC address of a first interface connected to it thus it will
-changing every time new VM is connected without connected interface).
+changing every time new VM is connected without the dummy interface).
 
 **NOTE** In order to provide internet communication path for kvm vms
 bridge should be attached to physical network interface. However it
 won't work in case the interface's connection type is wireless.
 
-Load `dummy` kernel module
+### load `dummy` kernel module
 
 ```bash
 sudo modprobe dummy
 ```
 
-Create virtual interface
+### create virtual interface
 
 ```bash
 sudo ip link add k8s-br0-nic type dummy
@@ -54,19 +66,19 @@ MAC=$(hexdump -vn3 -e '/3 "52:54:00"' -e '/1 ":%02x"' -e '"\n"' /dev/urandom)
 sudo ip link set dev k8s-br0-nic address $MAC
 ```
 
-Add the virtual interface to the bridge
+### add the virtual interface to the bridge
 
 ```bash
 sudo ip link set k8s-br0-nic master k8s-br0
 ```
 
-Verify the interface was added to the bridge
+### verify the interface was added to the bridge
 
 ```bash
 ip link show master k8s-br0
 ```
 
-Assign static ip address to the bridge
+### assign static ip address to the bridge
 
 The private subnet will be 192.168.100.0/24
 
@@ -76,7 +88,7 @@ sudo ip addr add 192.168.100.1/24 dev k8s-br0 broadcast 192.168.100.255
 
 ## NAT
 
-Allow packets forwarding
+### allow packets forwarding
 
 ```bash
 echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
@@ -84,7 +96,7 @@ echo "net.ipv4.conf.all.forwarding=1" >> /etc/sysctl.conf
 sysctl -p
 ```
 
-ip masquerading & packets forwarding rules in iptables
+### ip masquerading & packets forwarding rules in iptables
 
 ```bash
 cat << EOF > ip-masquerade.txt
@@ -142,4 +154,58 @@ COMMIT
 EOF
 ```
 
-...
+## dnsmasq
+
+The `libvirt` server runs its own `dnsmasq` instance to assign ip addr
+via dhcp to each vm.
+
+### create k8s-br0 interface specific files & dirs needed to run dnsmasq
+
+```bash
+mkdir -p /var/lib/dnsmasq/k8s-br0
+touch /var/lib/dnsmasq/k8s-br0/hostsfile
+touch /var/lib/dnsmasq/k8s-br0/leases
+```
+
+`hostsfile` - is using to assign a specific ip & mac addresses to a vm,
+`leases` - contains information regarding dhcp leases for vms (eg. ip/mac/uuid).
+
+### create dnsmasq configuration file
+
+```bash
+cat << EOF > /var/lib/dnsmasq/k8s-br0/dnsmasq.conf
+# Only bind to the virtual bridge. This avoids conflicts with other
+running
+# dnsmasq instances.
+except-interface=lo
+interface=k8s-br0
+bind-dynamic
+
+# IPv4 addresses to offer to VMs. This should match the chosen subnet.
+dhcp-range=192.168.100.2,192.168.100.254
+
+# Set this to at least the total number of addresses in DHCP-enabled
+subnets.
+dhcp-lease-max=1000
+
+# File to write DHCP lease information to.
+dhcp-leasefile=/var/lib/dnsmasq/k8s-br0/leases
+
+# File to read DHCP host information from.
+dhcp-hostsfile=/var/lib/dnsmasq/k8s-br0/hostsfile
+
+# Avoid problems with old or broken clients.
+dhcp-no-override
+
+# https://www.redhat.com/archives/libvir-list/2010-March/msg00038.html
+strict-order
+EOF
+```
+
+### run dnsmasq instance
+
+```bash
+sudo dnsmasq \
+    --conf-file=/var/lib/dnsmasq/k8s-br0/dnsmasq.conf \
+    --pid-file=/var/run/dnsmasq/k8s-br0.pid
+```

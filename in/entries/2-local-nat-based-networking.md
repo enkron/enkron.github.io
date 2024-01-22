@@ -86,6 +86,13 @@ The private subnet will be 192.168.100.0/24
 sudo ip addr add 192.168.100.1/24 dev k8s-br0 broadcast 192.168.100.255
 ```
 
+### turn on the network interfaces
+
+```bash
+sudo ip link set k8s-br0 up
+sudo ip link set k8s-br0-nic up
+```
+
 ## NAT
 
 ### allow packets forwarding
@@ -152,6 +159,12 @@ COMMIT
 -A FORWARD -o k8s-br0 -j REJECT --reject-with icmp-port-unreachable
 COMMIT
 EOF
+```
+
+### modify iptables
+
+```bash
+sudo iptables-restore -n -v < ip-masquerade.txt
 ```
 
 ## dnsmasq

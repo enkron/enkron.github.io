@@ -47,10 +47,10 @@ Assembly (x86_64), C, Java, Groovy, Rust
 **languages (proficient)**<br>
 Python, Bash
 
-**tools**<br>
-Jenkins, Git, Docker, Docker Swarm, Docker Compose, LXC, Buildbot,
-Kerberos, sssd, Ansible, Nginx, HAProxy, BIND, systemd, SSH, LVM, Vim,
-make, certbot, Vagrant, VirtualBox, QEMU
+**tools & technologies**<br>
+Vim, Git, Jenkins, Kubernetes, Helm, Docker, Terraform, HAProxy, Docker
+Swarm/Compose, libvirt, LXC, Kerberos, sssd, Ansible, Nginx, BIND,
+systemd, SSH, LVM, make, certbot, Vagrant, VirtualBox
 
 **databases**<br>
 PostgreSQL, MySQL, Apache HBase
@@ -59,7 +59,7 @@ PostgreSQL, MySQL, Apache HBase
 AWS (CodePipeline, EC2, RDS, EBS, CF, S3, VPC, CodeCommit), JIRA,
 Confluence, Salesforce, jFrog Artifactory, Hadoop, Apache Tomcat, Hive,
 Impala, Spark, Zookeper, Apache Kafka, Prometheus, Grafana, Grafana
-Mimir, Prometheus AlertManager
+Mimir, Buildbot, Prometheus AlertManager
 
 ## Work Experience
 

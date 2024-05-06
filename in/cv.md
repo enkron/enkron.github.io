@@ -66,17 +66,29 @@ Mimir, Buildbot, Prometheus AlertManager
 <p style="text-align:left;">
     <b><u><a href="https://morsemicro.com">Morse Micro</a> (full-time)</u></b>
     <span style="float:right; width: 300px; padding-right:10px">
-        <b>Dec 2022 - Present (1 yr)</b><br>
+        <b>Dec 2022 - Present (1 yr 5 mos)</b><br>
         Devops engineer<br>
         Sydney NSW, Australia
     </span>
 </p>
 <br>
 
-Prototyped and implemented CI system using Jenkins, Docker Swarm, and HAProxy.<br>
-Deployed monitoring solution with Prometheus, Grafana and Grafana Mimir.<br>
-Configured alerting with Prometheus AlertManager and Slack.<br>
-Implemented SSO authentication using SAML2.0 and GSuite as identity provider.<br>
+Prototyped and implemented CI system using Jenkins, Docker Swarm, and
+HAProxy.  Deployed monitoring solution with Prometheus, Grafana and
+Grafana Mimir.  Configured alerting with Prometheus AlertManager and
+Slack.  Implemented SSO authentication using SAML2.0 and GSuite as
+identity provider.
+
+Prototyped and implemented CI infrastructure POC using terraform as IaC
+solution. The infrastructure consisted of Kubernetes cluster deployed on
+AWS Fargate with Jenkins application as a CI system, AWS PCA for TLS
+encryption and dockerhub as a container registry.
+
+Deployed self-hosted runners for bitbucket pipelines
+
+Created and refactored bunch of groovy pipelines for developer and
+tester teams.
+
 Maintained production and development infrastructures.
 
 <p style="text-align:left;">
@@ -89,15 +101,15 @@ Maintained production and development infrastructures.
 </p>
 <br>
 
-I dealt with bare-metal servers rather than the now familiar cloud solutions.
-To automate routine processes i was creating Ansible playbooks for upgrade and
+Automated routine processes using Ansible playbooks for upgrade and
 deployment Confluence instances to the stage and production environments.
 
-Also was deploying and troubleshooting Bitbucket’s mirror farm.  Our team has
-created CI/CD pipelines using Buildbot (not very popular solution).
+Deployed and troubleshooted Bitbucket mirror farm.
 
-I\'ve also developed CLI utility using Python for automatic migration from one
-CRM system to another (Salesforce to JIRA) in a fairly short period of time.
+Maintained configuration for the Buildbot CI tool.
+
+Developed CLI utility using Python for automatic migration from one CRM
+system to another (Salesforce to JIRA) in a fairly short period of time.
 
 And of course my daily duties included monitoring the state of the servers,
 administering and configuring Linux hosts (authentication, logging, cleanup,
@@ -140,14 +152,7 @@ routines (using Jenkins scripted pipelines and Python / Bash scripts)
 Provided backup and disaster recovery strategies for infrastructure (with AWS
 capabilities: EBS snapshots, RDS multi A-Z, S3 cross-region replication &c).
 
-Containerized custom application for big data processing using Docker. There
-was a request for storing all components in a single container, that\'s
-absolutely contradicts Docker\'s paradigm. Nevertheless build process included
-configuration of the application itself and provisioning and configuration
-database (Postgresql). The total weight of the container was quite large (~4.29
-GB) and our team planned to split the application into separate services but
-unfortunately i didn\'t see the final result as i finished working for the
-company by that time.
+Containerized custom application for big data processing using Docker.
 
 <p style="text-align:left;">
     <b><u>self-employed</u></b>

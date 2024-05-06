@@ -101,8 +101,8 @@ Maintained production and development infrastructures.
 </p>
 <br>
 
-Automated routine processes using Ansible playbooks for upgrade and
-deployment Confluence instances to the stage and production environments.
+Developed Ansible playbooks for upgrade and deployment Confluence
+instances to the stage and production environments.
 
 Deployed and troubleshooted Bitbucket mirror farm.
 

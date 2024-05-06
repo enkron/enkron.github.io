@@ -38,7 +38,7 @@ jobs:
           sudo apt-get install -y ./wkhtmltox_0.12.6-1.focal_amd64.deb
 
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: build and run the program
         run: |
@@ -65,7 +65,7 @@ jobs:
           ls -ltr
 
       - name: upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: github-pages
           path: github-pages
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: download the artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: github-pages
 

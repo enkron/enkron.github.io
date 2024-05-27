@@ -25,11 +25,11 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |sh -s -- -qy
           rustup --version
 
-      - name: install and switch to rustup's nightly toolchain
-        run: |
-          rustup toolchain install nightly
-          rustup run nightly rustc --version
-          rustup default nightly
+      #- name: install and switch to rustup's nightly toolchain
+      #  run: |
+      #    rustup toolchain install nightly
+      #    rustup run nightly rustc --version
+      #    rustup default nightly
 
       - name: install `wkhtmltopdf` tool
         run: |

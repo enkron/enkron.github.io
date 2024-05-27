@@ -18,12 +18,11 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: install Rust toolchain
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
-          sh rustup.sh -y
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |sh -s -- -qy
           rustup --version
 
       - name: install and switch to rustup's nightly toolchain
@@ -34,7 +33,7 @@ jobs:
 
       - name: install `wkhtmltopdf` tool
         run: |
-          wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
+          curl -sSfLO https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
           sudo apt-get install -y ./wkhtmltox_0.12.6-1.focal_amd64.deb
 
       - name: checkout repository

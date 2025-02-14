@@ -26,7 +26,7 @@
 
 ### Summary
 
-Devops engineer with a bachelor\'s degree in CS and near the six years of
+Devops engineer with a bachelor\'s degree in CS and near the seven years of
 experience in some technologies and programming languages.
 I mainly act in a devops field: from automation of routine processes using
 scripting languages like Python and Bash to develop and maintain reliable
@@ -73,16 +73,20 @@ Mimir, Buildbot, Prometheus AlertManager
 </p>
 <br>
 
+Prototyped and implemented CI infrastructure using terraform as IaC
+solution. The infrastructure consisted of Kubernetes cluster deployed on
+AWS Fargate with Jenkins application as a CI system, AWS PCA for TLS
+encryption, cert-manager for the certificates rotation and dockerhub as
+a container registry.
+
+Configured in-cluster container registry to incrementally download big
+images using Harbor and SOCI index.
+
 Prototyped and implemented CI system using Jenkins, Docker Swarm, and
 HAProxy.  Deployed monitoring solution with Prometheus, Grafana and
 Grafana Mimir.  Configured alerting with Prometheus AlertManager and
 Slack.  Implemented SSO authentication using SAML2.0 and GSuite as
 identity provider.
-
-Prototyped and implemented CI infrastructure POC using terraform as IaC
-solution. The infrastructure consisted of Kubernetes cluster deployed on
-AWS Fargate with Jenkins application as a CI system, AWS PCA for TLS
-encryption and dockerhub as a container registry.
 
 Deployed self-hosted runners for bitbucket pipelines
 

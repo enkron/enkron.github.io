@@ -1,6 +1,6 @@
 <h1><a href="/download/cover.pdf" title="export to pdf">Hello</a></h1>
 
-Devops engineer with a bachelor\'s degree in CS and near the six years
+Devops engineer with a bachelor\'s degree in CS and near the seven years
 of experience in some technologies and programming languages. I mainly
 act in a devops field: from automation of routine processes using
 scripting languages like Python and Bash to develop and maintain

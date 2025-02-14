@@ -2,7 +2,7 @@
 
 <br>
 <p style="text-align:left;">
-    <a href="https://www.google.com/maps/place/St+Petersburg,+Russia/@59.940117,29.8145062,10z">St. Petersburg</a>
+    <a href="https://www.google.com/maps/place/Sydney,+Australia/@-33.8822117,151.2210432,15z">Sydney</a>
     <span style="float:right; padding-right:10px">
         <a href="https://github.com/enkron">github.com/enkron</a>
     </span>

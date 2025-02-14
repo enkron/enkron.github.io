@@ -66,7 +66,7 @@ Mimir, Buildbot, Prometheus AlertManager
 <p style="text-align:left;">
     <b><u><a href="https://morsemicro.com">Morse Micro</a> (full-time)</u></b>
     <span style="float:right; width: 300px; padding-right:10px">
-        <b>Dec 2022 - Present (1 yr 5 mos)</b><br>
+        <b>Dec 2022 - Present (2 years, 1 month)</b><br>
         Devops engineer<br>
         Sydney NSW, Australia
     </span>
@@ -98,7 +98,7 @@ Maintained production and development infrastructures.
 <p style="text-align:left;">
     <b><u><a href="https://onsemi.com">onsemi</a> (full-time)</u></b>
     <span style="float:right; width: 300px; padding-right:10px">
-        <b>Nov 2021 - Oct 2022 (1 yr)</b><br>
+        <b>Nov 2021 - Oct 2022 (1 year)</b><br>
         Devops engineer<br>
         St Petersburg City, Russia
     </span>
@@ -123,7 +123,7 @@ Atlassian stack (JIRA, Confluence, Bitbucket).
 <p style="text-align:left;">
     <b><u><a href="https://epam.com">EPAM Systems</a> (full-time)</u></b>
     <span style="float:right; width: 300px; padding-right:10px">
-        <b>Jul 2018 - Nov 2021 (3 yrs 5 mos)</b><br>
+        <b>Jul 2018 - Nov 2021 (3 years, 5 months)</b><br>
         Systems engineer<br>
         St Petersburg City, Russia
     </span>
@@ -161,7 +161,7 @@ Containerized custom application for big data processing using Docker.
 <p style="text-align:left;">
     <b><u>self-employed</u></b>
     <span style="float:right; width: 300px; padding-right:10px">
-        <b>May 2016 - Jun 2018 (2 yrs 2 mos)</b><br>
+        <b>May 2016 - Jun 2018 (2 years, 2 months)</b><br>
         St Petersburg City, Russia
     </span>
 </p>

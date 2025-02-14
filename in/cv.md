@@ -37,7 +37,7 @@ in Rust.
 ### Objective
 
 Work in areas related to software engineering: kernel/user space,
-embedded systems, Devops or cybersec
+devops, platform engineering, SRE, embedded systems or cybersec
 
 ## Hard skills
 

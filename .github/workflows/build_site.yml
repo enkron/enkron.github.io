@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     steps:
       - name: install Rust toolchain
         run: |
@@ -33,8 +33,8 @@ jobs:
 
       - name: install `wkhtmltopdf` tool
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends wkhtmltopdf
+          curl -sSfLO https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+          sudo apt-get install -y ./wkhtmltox_0.12.6.1-3.jammy_amd64.deb
 
       - name: checkout repository
         uses: actions/checkout@v4
@@ -73,7 +73,7 @@ jobs:
     # Stub for future unit/integration tests applied to the binary or
     # generated site itself
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: check the site is ok
         run: |
@@ -85,7 +85,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: download the artifact
         uses: actions/download-artifact@v4

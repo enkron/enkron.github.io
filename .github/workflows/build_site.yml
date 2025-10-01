@@ -34,7 +34,7 @@ jobs:
       - name: install `wkhtmltopdf` tool
         run: |
           sudo apt-get update
-          sudo apt-get install -y wkhtmltopdf
+          sudo apt-get install -y --no-install-recommends wkhtmltopdf
 
       - name: checkout repository
         uses: actions/checkout@v4

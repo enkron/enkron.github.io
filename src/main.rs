@@ -5,10 +5,10 @@ use std::{
     path::{Path, PathBuf},
 };
 use walkdir::WalkDir;
-use wkhtmltopdf::{Orientation, PageSize, PdfApplication, Size};
 
 mod rend;
 use rend::Layout;
+mod pdf;
 
 const CONTENT_DIR: &str = "in";
 const DOWNLOAD_DIR: &str = "download";
@@ -44,7 +44,7 @@ impl Site {
             pulldown_cmark::html::push_html(&mut body, parser);
 
             let mut html = String::new();
-            html.push_str(Layout::header());
+            html.push_str(&Layout::header());
             html.push_str(Layout::body(&body).as_str());
             html.push_str(&Layout::footer());
 
@@ -66,39 +66,20 @@ impl Site {
         }
 
         fs::create_dir_all(DOWNLOAD_DIR)?;
-        let pdf_app = PdfApplication::new()?;
 
-        Self::export("cv.md", "sbelokon", &pdf_app)?;
-        Self::export("index.md", "cover", &pdf_app)?;
+        Self::export("cv.md", "sbelokon")?;
+        Self::export("index.md", "cover")?;
 
         Ok(())
     }
 
-    fn export<P: AsRef<Path>>(
-        f_in: P,
-        f_out: P,
-        pdf_app: &PdfApplication,
-    ) -> Result<(), anyhow::Error> {
+    fn export<P: AsRef<Path>>(f_in: P, f_out: P) -> Result<(), anyhow::Error> {
         let md = fs::read_to_string(PathBuf::from(CONTENT_DIR).join(f_in))?;
-        let parser = Parser::new_ext(&md, Options::all());
-
-        let mut body = String::new();
-        pulldown_cmark::html::push_html(&mut body, parser);
-        let mut html = String::new();
-        html.push_str(Layout::body(&body).as_str());
-
-        let mut pdf_builder = pdf_app.builder();
-        pdf_builder
-            .page_size(PageSize::A4)
-            .orientation(Orientation::Portrait)
-            .margin(Size::Millimeters(10))
-            .title("sbelokon");
-
-        let mut pdf = pdf_builder.build_from_html(&html)?;
         let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(f_out);
 
         pdf_path.set_extension("pdf");
-        pdf.save(pdf_path)?;
+        let pdf_bytes = pdf::render(&md);
+        fs::write(pdf_path, pdf_bytes)?;
 
         Ok(())
     }

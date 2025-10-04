@@ -6,14 +6,14 @@ use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag};
 const PAGE_WIDTH: f32 = 595.0;
 const PAGE_HEIGHT: f32 = 842.0;
 const MARGIN_HORIZONTAL: f32 = 40.0;
-const MARGIN_TOP: f32 = 60.0;
-const MARGIN_BOTTOM: f32 = 50.0;
-const BODY_FONT_SIZE: f32 = 11.0;
-const HEADING1_FONT_SIZE: f32 = 18.0;
-const HEADING2_FONT_SIZE: f32 = 14.0;
-const HEADING3_FONT_SIZE: f32 = 12.0;
-const LINE_SPACING_FACTOR: f32 = 1.4;
-const BULLET_INDENT_POINTS: f32 = 20.0;
+const MARGIN_TOP: f32 = 50.0;
+const MARGIN_BOTTOM: f32 = 40.0;
+const BODY_FONT_SIZE: f32 = 10.0;
+const HEADING1_FONT_SIZE: f32 = 16.0;
+const HEADING2_FONT_SIZE: f32 = 12.0;
+const HEADING3_FONT_SIZE: f32 = 11.0;
+const LINE_SPACING_FACTOR: f32 = 1.3;
+const BULLET_INDENT_POINTS: f32 = 18.0;
 
 /// Get character width for Helvetica font (in 1000 units, scale by font_size/1000)
 fn helvetica_char_width(c: char, bold: bool) -> f32 {
@@ -181,6 +181,7 @@ fn parse_markdown(input: &str) -> Vec<Block> {
                 Tag::TableHead => {
                     if let Some(state) = table_stack.last_mut() {
                         state.in_head = true;
+                        state.start_row(); // Start a row for header cells
                     }
                     block_stack.push(BlockContext::TableHead);
                 }
@@ -251,6 +252,7 @@ fn parse_markdown(input: &str) -> Vec<Block> {
                 Tag::TableHead => {
                     if let Some(BlockContext::TableHead) = block_stack.pop() {
                         if let Some(state) = table_stack.last_mut() {
+                            state.finish_row(); // Finish the header row
                             state.in_head = false;
                         }
                     }
@@ -339,7 +341,8 @@ impl TableState {
 
     fn finish_row(&mut self) {
         if let Some(mut row) = self.current_row.take() {
-            if !self.in_head || row.iter().any(|cell| !is_all_whitespace(cell)) {
+            // Include all non-empty rows (both header and body rows)
+            if row.iter().any(|cell| !is_all_whitespace(cell)) {
                 self.rows.push(row.drain(..).collect());
             }
         }
@@ -487,7 +490,7 @@ impl PdfComposer {
             _ => (HEADING3_FONT_SIZE, HEADING3_FONT_SIZE * LINE_SPACING_FACTOR),
         };
 
-        self.ensure_space(spacing + 6.0);
+        self.ensure_space(spacing + 4.0);
         let text = plain_text(content);
         let text_w = text_width(&text, size, true);
         let x = if level == 1 {
@@ -499,9 +502,9 @@ impl PdfComposer {
         self.current.write_text(x, y, FontFace::Bold, size, &text);
         self.cursor_y -= spacing;
         if level == 1 {
-            self.cursor_y -= 8.0;
+            self.cursor_y -= 5.0;
         } else {
-            self.cursor_y -= 4.0;
+            self.cursor_y -= 2.0;
         }
     }
 
@@ -521,7 +524,7 @@ impl PdfComposer {
             self.write_line(&line, MARGIN_HORIZONTAL, y, BODY_FONT_SIZE);
             self.cursor_y -= line_height;
         }
-        self.cursor_y -= 6.0;
+        self.cursor_y -= 3.0;
     }
 
     fn render_list(&mut self, items: &[Vec<Inline>]) {
@@ -554,9 +557,9 @@ impl PdfComposer {
                 );
                 self.cursor_y -= line_height;
             }
-            self.cursor_y -= 4.0;
+            self.cursor_y -= 2.0;
         }
-        self.cursor_y -= 4.0;
+        self.cursor_y -= 3.0;
     }
 
     fn render_table(&mut self, rows: &[Vec<Vec<Inline>>]) {
@@ -600,7 +603,7 @@ impl PdfComposer {
 
             self.cursor_y -= line_height;
         }
-        self.cursor_y -= 6.0;
+        self.cursor_y -= 3.0;
     }
 
     fn ensure_space(&mut self, required: f32) {

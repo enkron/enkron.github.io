@@ -8,106 +8,580 @@ const PAGE_HEIGHT: f32 = 842.0;
 const MARGIN_HORIZONTAL: f32 = 40.0;
 const MARGIN_TOP: f32 = 50.0;
 const MARGIN_BOTTOM: f32 = 40.0;
-const BODY_FONT_SIZE: f32 = 10.0;
+const BODY_FONT_SIZE: f32 = 9.0;
 const HEADING1_FONT_SIZE: f32 = 16.0;
 const HEADING2_FONT_SIZE: f32 = 12.0;
 const HEADING3_FONT_SIZE: f32 = 11.0;
-const LINE_SPACING_FACTOR: f32 = 1.3;
+const LINE_SPACING_FACTOR: f32 = 1.6;
 const BULLET_INDENT_POINTS: f32 = 18.0;
 
-/// Get character width for Helvetica font (in 1000 units, scale by font_size/1000)
+/// Get character width for Helvetica font (in 1000 units, scale by `font_size`/1000)
 fn helvetica_char_width(c: char, bold: bool) -> f32 {
     // Helvetica widths in 1000-unit em square
     // Common characters only; unknown chars default to 500 units
     match c {
         ' ' => 278.0,
-        '!' => if bold { 333.0 } else { 278.0 },
-        '"' => if bold { 474.0 } else { 355.0 },
+        '!' => {
+            if bold {
+                333.0
+            } else {
+                278.0
+            }
+        }
+        '"' => {
+            if bold {
+                474.0
+            } else {
+                355.0
+            }
+        }
         '#' => 556.0,
         '$' => 556.0,
         '%' => 889.0,
-        '&' => if bold { 722.0 } else { 667.0 },
-        '\'' => if bold { 278.0 } else { 191.0 },
-        '(' => if bold { 333.0 } else { 333.0 },
-        ')' => if bold { 333.0 } else { 333.0 },
-        '*' => if bold { 389.0 } else { 389.0 },
+        '&' => {
+            if bold {
+                722.0
+            } else {
+                667.0
+            }
+        }
+        '\'' => {
+            if bold {
+                278.0
+            } else {
+                191.0
+            }
+        }
+        '(' => {
+            if bold {
+                333.0
+            } else {
+                333.0
+            }
+        }
+        ')' => {
+            if bold {
+                333.0
+            } else {
+                333.0
+            }
+        }
+        '*' => {
+            if bold {
+                389.0
+            } else {
+                389.0
+            }
+        }
         '+' => 584.0,
-        ',' => if bold { 278.0 } else { 278.0 },
-        '-' => if bold { 333.0 } else { 333.0 },
-        '.' => if bold { 278.0 } else { 278.0 },
-        '/' => if bold { 278.0 } else { 278.0 },
+        ',' => {
+            if bold {
+                278.0
+            } else {
+                278.0
+            }
+        }
+        '-' => {
+            if bold {
+                333.0
+            } else {
+                333.0
+            }
+        }
+        '.' => {
+            if bold {
+                278.0
+            } else {
+                278.0
+            }
+        }
+        '/' => {
+            if bold {
+                278.0
+            } else {
+                278.0
+            }
+        }
         '0'..='9' => 556.0,
-        ':' => if bold { 333.0 } else { 278.0 },
-        ';' => if bold { 333.0 } else { 278.0 },
+        ':' => {
+            if bold {
+                333.0
+            } else {
+                278.0
+            }
+        }
+        ';' => {
+            if bold {
+                333.0
+            } else {
+                278.0
+            }
+        }
         '<' => 584.0,
         '=' => 584.0,
         '>' => 584.0,
-        '?' => if bold { 611.0 } else { 556.0 },
-        '@' => if bold { 975.0 } else { 1015.0 },
-        'A' => if bold { 722.0 } else { 667.0 },
-        'B' => if bold { 722.0 } else { 667.0 },
-        'C' => if bold { 722.0 } else { 722.0 },
-        'D' => if bold { 722.0 } else { 722.0 },
-        'E' => if bold { 667.0 } else { 667.0 },
-        'F' => if bold { 611.0 } else { 611.0 },
-        'G' => if bold { 778.0 } else { 778.0 },
-        'H' => if bold { 722.0 } else { 722.0 },
-        'I' => if bold { 278.0 } else { 278.0 },
-        'J' => if bold { 556.0 } else { 500.0 },
-        'K' => if bold { 722.0 } else { 667.0 },
-        'L' => if bold { 611.0 } else { 556.0 },
-        'M' => if bold { 833.0 } else { 833.0 },
-        'N' => if bold { 722.0 } else { 722.0 },
-        'O' => if bold { 778.0 } else { 778.0 },
-        'P' => if bold { 667.0 } else { 667.0 },
-        'Q' => if bold { 778.0 } else { 778.0 },
-        'R' => if bold { 722.0 } else { 722.0 },
-        'S' => if bold { 667.0 } else { 667.0 },
-        'T' => if bold { 611.0 } else { 611.0 },
-        'U' => if bold { 722.0 } else { 722.0 },
-        'V' => if bold { 667.0 } else { 667.0 },
-        'W' => if bold { 944.0 } else { 944.0 },
-        'X' => if bold { 667.0 } else { 667.0 },
-        'Y' => if bold { 667.0 } else { 667.0 },
-        'Z' => if bold { 611.0 } else { 611.0 },
-        '[' => if bold { 333.0 } else { 278.0 },
-        '\\' => if bold { 278.0 } else { 278.0 },
-        ']' => if bold { 333.0 } else { 278.0 },
-        '^' => if bold { 581.0 } else { 469.0 },
-        '_' => if bold { 556.0 } else { 556.0 },
-        '`' => if bold { 333.0 } else { 222.0 },
-        'a' => if bold { 556.0 } else { 556.0 },
-        'b' => if bold { 611.0 } else { 556.0 },
-        'c' => if bold { 556.0 } else { 500.0 },
-        'd' => if bold { 611.0 } else { 556.0 },
-        'e' => if bold { 556.0 } else { 556.0 },
-        'f' => if bold { 333.0 } else { 278.0 },
-        'g' => if bold { 611.0 } else { 556.0 },
-        'h' => if bold { 611.0 } else { 556.0 },
-        'i' => if bold { 278.0 } else { 222.0 },
-        'j' => if bold { 278.0 } else { 222.0 },
-        'k' => if bold { 556.0 } else { 500.0 },
-        'l' => if bold { 278.0 } else { 222.0 },
-        'm' => if bold { 889.0 } else { 833.0 },
-        'n' => if bold { 611.0 } else { 556.0 },
-        'o' => if bold { 611.0 } else { 556.0 },
-        'p' => if bold { 611.0 } else { 556.0 },
-        'q' => if bold { 611.0 } else { 556.0 },
-        'r' => if bold { 389.0 } else { 333.0 },
-        's' => if bold { 556.0 } else { 500.0 },
-        't' => if bold { 333.0 } else { 278.0 },
-        'u' => if bold { 611.0 } else { 556.0 },
-        'v' => if bold { 556.0 } else { 500.0 },
-        'w' => if bold { 778.0 } else { 722.0 },
-        'x' => if bold { 556.0 } else { 500.0 },
-        'y' => if bold { 556.0 } else { 500.0 },
-        'z' => if bold { 500.0 } else { 500.0 },
-        '{' => if bold { 389.0 } else { 334.0 },
-        '|' => if bold { 280.0 } else { 260.0 },
-        '}' => if bold { 389.0 } else { 334.0 },
-        '~' => if bold { 584.0 } else { 584.0 },
-        '•' => if bold { 350.0 } else { 350.0 },
-        _ => if bold { 556.0 } else { 500.0 }, // Default for unknown chars
+        '?' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        '@' => {
+            if bold {
+                975.0
+            } else {
+                1015.0
+            }
+        }
+        'A' => {
+            if bold {
+                722.0
+            } else {
+                667.0
+            }
+        }
+        'B' => {
+            if bold {
+                722.0
+            } else {
+                667.0
+            }
+        }
+        'C' => {
+            if bold {
+                722.0
+            } else {
+                722.0
+            }
+        }
+        'D' => {
+            if bold {
+                722.0
+            } else {
+                722.0
+            }
+        }
+        'E' => {
+            if bold {
+                667.0
+            } else {
+                667.0
+            }
+        }
+        'F' => {
+            if bold {
+                611.0
+            } else {
+                611.0
+            }
+        }
+        'G' => {
+            if bold {
+                778.0
+            } else {
+                778.0
+            }
+        }
+        'H' => {
+            if bold {
+                722.0
+            } else {
+                722.0
+            }
+        }
+        'I' => {
+            if bold {
+                278.0
+            } else {
+                278.0
+            }
+        }
+        'J' => {
+            if bold {
+                556.0
+            } else {
+                500.0
+            }
+        }
+        'K' => {
+            if bold {
+                722.0
+            } else {
+                667.0
+            }
+        }
+        'L' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        'M' => {
+            if bold {
+                833.0
+            } else {
+                833.0
+            }
+        }
+        'N' => {
+            if bold {
+                722.0
+            } else {
+                722.0
+            }
+        }
+        'O' => {
+            if bold {
+                778.0
+            } else {
+                778.0
+            }
+        }
+        'P' => {
+            if bold {
+                667.0
+            } else {
+                667.0
+            }
+        }
+        'Q' => {
+            if bold {
+                778.0
+            } else {
+                778.0
+            }
+        }
+        'R' => {
+            if bold {
+                722.0
+            } else {
+                722.0
+            }
+        }
+        'S' => {
+            if bold {
+                667.0
+            } else {
+                667.0
+            }
+        }
+        'T' => {
+            if bold {
+                611.0
+            } else {
+                611.0
+            }
+        }
+        'U' => {
+            if bold {
+                722.0
+            } else {
+                722.0
+            }
+        }
+        'V' => {
+            if bold {
+                667.0
+            } else {
+                667.0
+            }
+        }
+        'W' => {
+            if bold {
+                944.0
+            } else {
+                944.0
+            }
+        }
+        'X' => {
+            if bold {
+                667.0
+            } else {
+                667.0
+            }
+        }
+        'Y' => {
+            if bold {
+                667.0
+            } else {
+                667.0
+            }
+        }
+        'Z' => {
+            if bold {
+                611.0
+            } else {
+                611.0
+            }
+        }
+        '[' => {
+            if bold {
+                333.0
+            } else {
+                278.0
+            }
+        }
+        '\\' => {
+            if bold {
+                278.0
+            } else {
+                278.0
+            }
+        }
+        ']' => {
+            if bold {
+                333.0
+            } else {
+                278.0
+            }
+        }
+        '^' => {
+            if bold {
+                581.0
+            } else {
+                469.0
+            }
+        }
+        '_' => {
+            if bold {
+                556.0
+            } else {
+                556.0
+            }
+        }
+        '`' => {
+            if bold {
+                333.0
+            } else {
+                222.0
+            }
+        }
+        'a' => {
+            if bold {
+                556.0
+            } else {
+                556.0
+            }
+        }
+        'b' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        'c' => {
+            if bold {
+                556.0
+            } else {
+                500.0
+            }
+        }
+        'd' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        'e' => {
+            if bold {
+                556.0
+            } else {
+                556.0
+            }
+        }
+        'f' => {
+            if bold {
+                333.0
+            } else {
+                278.0
+            }
+        }
+        'g' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        'h' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        'i' => {
+            if bold {
+                278.0
+            } else {
+                222.0
+            }
+        }
+        'j' => {
+            if bold {
+                278.0
+            } else {
+                222.0
+            }
+        }
+        'k' => {
+            if bold {
+                556.0
+            } else {
+                500.0
+            }
+        }
+        'l' => {
+            if bold {
+                278.0
+            } else {
+                222.0
+            }
+        }
+        'm' => {
+            if bold {
+                889.0
+            } else {
+                833.0
+            }
+        }
+        'n' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        'o' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        'p' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        'q' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        'r' => {
+            if bold {
+                389.0
+            } else {
+                333.0
+            }
+        }
+        's' => {
+            if bold {
+                556.0
+            } else {
+                500.0
+            }
+        }
+        't' => {
+            if bold {
+                333.0
+            } else {
+                278.0
+            }
+        }
+        'u' => {
+            if bold {
+                611.0
+            } else {
+                556.0
+            }
+        }
+        'v' => {
+            if bold {
+                556.0
+            } else {
+                500.0
+            }
+        }
+        'w' => {
+            if bold {
+                778.0
+            } else {
+                722.0
+            }
+        }
+        'x' => {
+            if bold {
+                556.0
+            } else {
+                500.0
+            }
+        }
+        'y' => {
+            if bold {
+                556.0
+            } else {
+                500.0
+            }
+        }
+        'z' => {
+            if bold {
+                500.0
+            } else {
+                500.0
+            }
+        }
+        '{' => {
+            if bold {
+                389.0
+            } else {
+                334.0
+            }
+        }
+        '|' => {
+            if bold {
+                280.0
+            } else {
+                260.0
+            }
+        }
+        '}' => {
+            if bold {
+                389.0
+            } else {
+                334.0
+            }
+        }
+        '~' => {
+            if bold {
+                584.0
+            } else {
+                584.0
+            }
+        }
+        '•' => {
+            if bold {
+                350.0
+            } else {
+                350.0
+            }
+        }
+        _ => {
+            if bold {
+                556.0
+            } else {
+                500.0
+            }
+        } // Default for unknown chars
     }
 }
 
@@ -502,11 +976,11 @@ impl PdfComposer {
         self.current.write_text(x, y, FontFace::Bold, size, &text);
         self.cursor_y -= spacing;
         if level == 1 {
-            self.cursor_y -= 6.0;
+            self.cursor_y -= 8.0;
         } else if level == 2 {
             self.cursor_y -= 4.0;
         } else {
-            self.cursor_y -= 2.0;
+            self.cursor_y -= 3.0;
         }
     }
 
@@ -526,7 +1000,7 @@ impl PdfComposer {
             self.write_line(&line, MARGIN_HORIZONTAL, y, BODY_FONT_SIZE);
             self.cursor_y -= line_height;
         }
-        self.cursor_y -= 3.0;
+        self.cursor_y -= 8.0;
     }
 
     fn render_list(&mut self, items: &[Vec<Inline>]) {
@@ -561,7 +1035,7 @@ impl PdfComposer {
             }
             self.cursor_y -= 2.0;
         }
-        self.cursor_y -= 3.0;
+        self.cursor_y -= 8.0;
     }
 
     fn render_table(&mut self, rows: &[Vec<Vec<Inline>>]) {
@@ -605,7 +1079,7 @@ impl PdfComposer {
 
             self.cursor_y -= line_height;
         }
-        self.cursor_y -= 3.0;
+        self.cursor_y -= 8.0;
     }
 
     fn ensure_space(&mut self, required: f32) {

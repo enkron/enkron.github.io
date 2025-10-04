@@ -502,7 +502,9 @@ impl PdfComposer {
         self.current.write_text(x, y, FontFace::Bold, size, &text);
         self.cursor_y -= spacing;
         if level == 1 {
-            self.cursor_y -= 5.0;
+            self.cursor_y -= 6.0;
+        } else if level == 2 {
+            self.cursor_y -= 4.0;
         } else {
             self.cursor_y -= 2.0;
         }

@@ -8,13 +8,114 @@ const PAGE_HEIGHT: f32 = 842.0;
 const MARGIN_HORIZONTAL: f32 = 40.0;
 const MARGIN_TOP: f32 = 60.0;
 const MARGIN_BOTTOM: f32 = 50.0;
-const CHAR_WIDTH_FACTOR: f32 = 0.6;
 const BODY_FONT_SIZE: f32 = 11.0;
 const HEADING1_FONT_SIZE: f32 = 18.0;
 const HEADING2_FONT_SIZE: f32 = 14.0;
 const HEADING3_FONT_SIZE: f32 = 12.0;
 const LINE_SPACING_FACTOR: f32 = 1.4;
-const BULLET_INDENT_POINTS: f32 = 18.0;
+const BULLET_INDENT_POINTS: f32 = 20.0;
+
+/// Get character width for Helvetica font (in 1000 units, scale by font_size/1000)
+fn helvetica_char_width(c: char, bold: bool) -> f32 {
+    // Helvetica widths in 1000-unit em square
+    // Common characters only; unknown chars default to 500 units
+    match c {
+        ' ' => 278.0,
+        '!' => if bold { 333.0 } else { 278.0 },
+        '"' => if bold { 474.0 } else { 355.0 },
+        '#' => 556.0,
+        '$' => 556.0,
+        '%' => 889.0,
+        '&' => if bold { 722.0 } else { 667.0 },
+        '\'' => if bold { 278.0 } else { 191.0 },
+        '(' => if bold { 333.0 } else { 333.0 },
+        ')' => if bold { 333.0 } else { 333.0 },
+        '*' => if bold { 389.0 } else { 389.0 },
+        '+' => 584.0,
+        ',' => if bold { 278.0 } else { 278.0 },
+        '-' => if bold { 333.0 } else { 333.0 },
+        '.' => if bold { 278.0 } else { 278.0 },
+        '/' => if bold { 278.0 } else { 278.0 },
+        '0'..='9' => 556.0,
+        ':' => if bold { 333.0 } else { 278.0 },
+        ';' => if bold { 333.0 } else { 278.0 },
+        '<' => 584.0,
+        '=' => 584.0,
+        '>' => 584.0,
+        '?' => if bold { 611.0 } else { 556.0 },
+        '@' => if bold { 975.0 } else { 1015.0 },
+        'A' => if bold { 722.0 } else { 667.0 },
+        'B' => if bold { 722.0 } else { 667.0 },
+        'C' => if bold { 722.0 } else { 722.0 },
+        'D' => if bold { 722.0 } else { 722.0 },
+        'E' => if bold { 667.0 } else { 667.0 },
+        'F' => if bold { 611.0 } else { 611.0 },
+        'G' => if bold { 778.0 } else { 778.0 },
+        'H' => if bold { 722.0 } else { 722.0 },
+        'I' => if bold { 278.0 } else { 278.0 },
+        'J' => if bold { 556.0 } else { 500.0 },
+        'K' => if bold { 722.0 } else { 667.0 },
+        'L' => if bold { 611.0 } else { 556.0 },
+        'M' => if bold { 833.0 } else { 833.0 },
+        'N' => if bold { 722.0 } else { 722.0 },
+        'O' => if bold { 778.0 } else { 778.0 },
+        'P' => if bold { 667.0 } else { 667.0 },
+        'Q' => if bold { 778.0 } else { 778.0 },
+        'R' => if bold { 722.0 } else { 722.0 },
+        'S' => if bold { 667.0 } else { 667.0 },
+        'T' => if bold { 611.0 } else { 611.0 },
+        'U' => if bold { 722.0 } else { 722.0 },
+        'V' => if bold { 667.0 } else { 667.0 },
+        'W' => if bold { 944.0 } else { 944.0 },
+        'X' => if bold { 667.0 } else { 667.0 },
+        'Y' => if bold { 667.0 } else { 667.0 },
+        'Z' => if bold { 611.0 } else { 611.0 },
+        '[' => if bold { 333.0 } else { 278.0 },
+        '\\' => if bold { 278.0 } else { 278.0 },
+        ']' => if bold { 333.0 } else { 278.0 },
+        '^' => if bold { 581.0 } else { 469.0 },
+        '_' => if bold { 556.0 } else { 556.0 },
+        '`' => if bold { 333.0 } else { 222.0 },
+        'a' => if bold { 556.0 } else { 556.0 },
+        'b' => if bold { 611.0 } else { 556.0 },
+        'c' => if bold { 556.0 } else { 500.0 },
+        'd' => if bold { 611.0 } else { 556.0 },
+        'e' => if bold { 556.0 } else { 556.0 },
+        'f' => if bold { 333.0 } else { 278.0 },
+        'g' => if bold { 611.0 } else { 556.0 },
+        'h' => if bold { 611.0 } else { 556.0 },
+        'i' => if bold { 278.0 } else { 222.0 },
+        'j' => if bold { 278.0 } else { 222.0 },
+        'k' => if bold { 556.0 } else { 500.0 },
+        'l' => if bold { 278.0 } else { 222.0 },
+        'm' => if bold { 889.0 } else { 833.0 },
+        'n' => if bold { 611.0 } else { 556.0 },
+        'o' => if bold { 611.0 } else { 556.0 },
+        'p' => if bold { 611.0 } else { 556.0 },
+        'q' => if bold { 611.0 } else { 556.0 },
+        'r' => if bold { 389.0 } else { 333.0 },
+        's' => if bold { 556.0 } else { 500.0 },
+        't' => if bold { 333.0 } else { 278.0 },
+        'u' => if bold { 611.0 } else { 556.0 },
+        'v' => if bold { 556.0 } else { 500.0 },
+        'w' => if bold { 778.0 } else { 722.0 },
+        'x' => if bold { 556.0 } else { 500.0 },
+        'y' => if bold { 556.0 } else { 500.0 },
+        'z' => if bold { 500.0 } else { 500.0 },
+        '{' => if bold { 389.0 } else { 334.0 },
+        '|' => if bold { 280.0 } else { 260.0 },
+        '}' => if bold { 389.0 } else { 334.0 },
+        '~' => if bold { 584.0 } else { 584.0 },
+        '•' => if bold { 350.0 } else { 350.0 },
+        _ => if bold { 556.0 } else { 500.0 }, // Default for unknown chars
+    }
+}
+
+/// Calculate text width in points for given string
+fn text_width(text: &str, font_size: f32, bold: bool) -> f32 {
+    let width_units: f32 = text.chars().map(|c| helvetica_char_width(c, bold)).sum();
+    width_units * font_size / 1000.0
+}
 
 pub fn render(markdown: &str) -> Vec<u8> {
     let blocks = parse_markdown(markdown);
@@ -347,7 +448,7 @@ impl PdfPage {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum FontFace {
     Regular,
     Bold,
@@ -388,9 +489,9 @@ impl PdfComposer {
 
         self.ensure_space(spacing + 6.0);
         let text = plain_text(content);
-        let text_width = text.chars().count() as f32 * size * CHAR_WIDTH_FACTOR;
+        let text_w = text_width(&text, size, true);
         let x = if level == 1 {
-            ((PAGE_WIDTH - text_width) / 2.0).max(MARGIN_HORIZONTAL)
+            ((PAGE_WIDTH - text_w) / 2.0).max(MARGIN_HORIZONTAL)
         } else {
             MARGIN_HORIZONTAL
         };
@@ -406,8 +507,8 @@ impl PdfComposer {
 
     fn render_paragraph(&mut self, content: &[Inline]) {
         let tokens = tokenize(content, false);
-        let max_chars = max_chars_for_width(PAGE_WIDTH - 2.0 * MARGIN_HORIZONTAL, BODY_FONT_SIZE);
-        let lines = wrap_tokens(&tokens, max_chars);
+        let max_width = PAGE_WIDTH - 2.0 * MARGIN_HORIZONTAL;
+        let lines = wrap_tokens(&tokens, max_width, BODY_FONT_SIZE);
 
         if lines.is_empty() {
             return;
@@ -427,8 +528,7 @@ impl PdfComposer {
         for item in items {
             let tokens = tokenize(item, false);
             let available_width = PAGE_WIDTH - 2.0 * MARGIN_HORIZONTAL - BULLET_INDENT_POINTS;
-            let max_chars = max_chars_for_width(available_width, BODY_FONT_SIZE);
-            let lines = wrap_tokens(&tokens, max_chars);
+            let lines = wrap_tokens(&tokens, available_width, BODY_FONT_SIZE);
             if lines.is_empty() {
                 continue;
             }
@@ -493,8 +593,7 @@ impl PdfComposer {
             self.current
                 .write_text(MARGIN_HORIZONTAL, y, left_face, BODY_FONT_SIZE, &left_text);
 
-            let right_width =
-                right_text.chars().count() as f32 * BODY_FONT_SIZE * CHAR_WIDTH_FACTOR;
+            let right_width = text_width(&right_text, BODY_FONT_SIZE, right_face == FontFace::Bold);
             let right_x = (PAGE_WIDTH - MARGIN_HORIZONTAL - right_width).max(MARGIN_HORIZONTAL);
             self.current
                 .write_text(right_x, y, right_face, BODY_FONT_SIZE, &right_text);
@@ -519,7 +618,7 @@ impl PdfComposer {
                 FontFace::Regular
             };
             self.current.write_text(x, y, font, size, &segment.text);
-            let advance = segment.text.chars().count() as f32 * size * CHAR_WIDTH_FACTOR;
+            let advance = text_width(&segment.text, size, segment.bold);
             x += advance;
         }
     }
@@ -595,48 +694,54 @@ enum Token {
     HardBreak,
 }
 
-fn wrap_tokens(tokens: &[Token], max_chars: usize) -> Vec<Line> {
+fn wrap_tokens(tokens: &[Token], max_width: f32, font_size: f32) -> Vec<Line> {
     let mut lines = Vec::new();
     let mut current_segments: Vec<Segment> = Vec::new();
-    let mut current_len = 0usize;
+    let mut current_width = 0.0f32;
     let mut pending_space = false;
 
-    let mut push_line = |segments: &mut Vec<Segment>, len: &mut usize| {
+    let mut push_line = |segments: &mut Vec<Segment>, width: &mut f32| {
         if !segments.is_empty() {
             lines.push(Line {
                 segments: std::mem::take(segments),
             });
-            *len = 0;
+            *width = 0.0;
         }
     };
 
     for token in tokens {
         match token {
             Token::Space => {
-                if current_len > 0 {
+                if current_width > 0.0 {
                     pending_space = true;
                 }
             }
             Token::HardBreak => {
-                push_line(&mut current_segments, &mut current_len);
+                push_line(&mut current_segments, &mut current_width);
                 pending_space = false;
             }
             Token::Word { text, bold } => {
-                let word_len = text.chars().count();
-                let additional = word_len + if pending_space { 1 } else { 0 };
-                if current_len > 0 && current_len + additional > max_chars {
-                    push_line(&mut current_segments, &mut current_len);
+                let word_width = text_width(text, font_size, *bold);
+                let space_width = if pending_space {
+                    text_width(" ", font_size, false)
+                } else {
+                    0.0
+                };
+                let additional = word_width + space_width;
+
+                if current_width > 0.0 && current_width + additional > max_width {
+                    push_line(&mut current_segments, &mut current_width);
                     pending_space = false;
                 }
 
                 if pending_space && !current_segments.is_empty() {
                     append_segment(&mut current_segments, " ", false);
-                    current_len += 1;
+                    current_width += text_width(" ", font_size, false);
                     pending_space = false;
                 }
 
                 append_segment(&mut current_segments, text, *bold);
-                current_len += word_len;
+                current_width += word_width;
             }
         }
     }
@@ -666,10 +771,6 @@ fn append_segment(segments: &mut Vec<Segment>, text: &str, bold: bool) {
         text: text.to_string(),
         bold,
     });
-}
-
-fn max_chars_for_width(width: f32, font_size: f32) -> usize {
-    ((width / (font_size * CHAR_WIDTH_FACTOR)).floor() as usize).max(1)
 }
 
 fn plain_text(inlines: &[Inline]) -> String {
@@ -708,7 +809,18 @@ fn escape_pdf_text(text: &str) -> String {
             '\r' => {
                 escaped.push(' ');
             }
-            _ => escaped.push(ch),
+            '•' => {
+                // Bullet character: use octal escape for StandardEncoding position
+                escaped.push_str("\\267");
+            }
+            _ => {
+                // For non-ASCII characters, try to preserve them or use space
+                if ch.is_ascii() || ch as u32 <= 255 {
+                    escaped.push(ch);
+                } else {
+                    escaped.push('?');
+                }
+            }
         }
     }
     escaped
@@ -786,13 +898,13 @@ fn write_pdf(pages: &[PdfPage]) -> Vec<u8> {
         &mut buffer,
         &mut offsets,
         font_regular_id,
-        "<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>",
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
     );
     write_object(
         &mut buffer,
         &mut offsets,
         font_bold_id,
-        "<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>",
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
     );
 
     for (page, content_id) in pages.iter().zip(content_ids.iter()) {

@@ -86,8 +86,7 @@ cargo clippy
 
 GitHub Actions workflow (`.github/workflows/build_site.yml`):
 1. Installs Rust toolchain
-2. Installs `wkhtmltopdf` (Ubuntu Jammy package) - note: this is no longer used in the code but still referenced in CI
-3. Builds and runs: `cargo run --release`
-4. Archives and deploys to GitHub Pages
+2. Builds and runs: `cargo run --release`
+3. Archives and deploys to GitHub Pages
 
 The workflow runs on pushes to `main` and includes three jobs: `build`, `test` (stub), and `deploy`.

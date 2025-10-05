@@ -65,6 +65,7 @@ Mimir. Configured alerting with Prometheus AlertManager and Slack. Implemented
 SSO authentication using SAML2.0 and GSuite as identity provider.
 
 Deployed self-hosted runners for bitbucket pipelines.
+
 Created and refactored bunch of groovy pipelines for developer and tester
 teams.
 

@@ -1,36 +1,84 @@
 use chrono::{Datelike, NaiveDate};
 use regex::Regex;
+use std::fs;
 
 /// Processes work period markers in markdown and replaces them with calculated durations.
 ///
-/// Syntax: `{{work_period: start="YYYY-MM", end="present"}}` or `{{work_period: start="YYYY-MM", end="YYYY-MM"}}`
+/// Syntax:
+/// - `{{work_period: start="YYYY-MM", end="present"}}` → "2 years, 10 months"
+/// - `{{work_period: start="YYYY-MM", end="YYYY-MM"}}` → "3 years, 5 months"
+/// - `{{total_work_period}}` → sum of all work_period markers (reads from cv.md if needed)
 ///
 /// Example:
-/// - `{{work_period: start="2022-12", end="present"}}` → "2 years, 10 months"
-/// - `{{work_period: start="2018-07", end="2021-11"}}` → "3 years, 5 months"
+/// ```
+/// {{work_period: start="2022-12", end="present"}}
+/// {{work_period: start="2018-07", end="2021-11"}}
+/// Total: {{total_work_period}}
+/// ```
 pub fn process(markdown: &str) -> String {
+    let mut durations = Vec::new();
+
+    // First pass: replace individual work_period markers and collect durations
     let re = Regex::new(r#"\{\{work_period:\s*start="([^"]+)",?\s*end="([^"]+)"\}\}"#)
         .expect("Invalid regex");
 
-    re.replace_all(markdown, |caps: &regex::Captures| {
+    let after_work_periods = re.replace_all(markdown, |caps: &regex::Captures| {
         let start = &caps[1];
         let end = &caps[2];
 
-        match calculate_duration(start, end) {
-            Ok(duration) => duration,
+        match calculate_duration_parts(start, end) {
+            Ok((years, months)) => {
+                durations.push((years, months));
+                format_duration(years, months)
+            }
             Err(e) => {
                 eprintln!("Warning: Failed to parse work period (start={start}, end={end}): {e}");
                 format!("{{{{work_period: start=\"{start}\", end=\"{end}\"}}}}")
             }
         }
     })
-    .to_string()
+    .to_string();
+
+    // Second pass: replace total_work_period with sum (years only, rounded)
+    // If no work periods found in current file but total_work_period exists, read from cv.md
+    if durations.is_empty() && after_work_periods.contains("{{total_work_period}}") {
+        durations = extract_durations_from_cv();
+    }
+
+    let total = sum_durations(&durations);
+    after_work_periods.replace("{{total_work_period}}", &format_duration_years_only(total.0, total.1))
 }
 
-/// Calculates duration between two dates and returns human-readable format.
+/// Extracts work period durations from cv.md file.
+fn extract_durations_from_cv() -> Vec<(i32, i32)> {
+    let cv_path = "in/cv.md";
+    match fs::read_to_string(cv_path) {
+        Ok(cv_content) => {
+            let mut durations = Vec::new();
+            let re = Regex::new(r#"\{\{work_period:\s*start="([^"]+)",?\s*end="([^"]+)"\}\}"#)
+                .expect("Invalid regex");
+
+            for caps in re.captures_iter(&cv_content) {
+                let start = &caps[1];
+                let end = &caps[2];
+
+                if let Ok((years, months)) = calculate_duration_parts(start, end) {
+                    durations.push((years, months));
+                }
+            }
+            durations
+        }
+        Err(e) => {
+            eprintln!("Warning: Failed to read cv.md for total_work_period: {e}");
+            Vec::new()
+        }
+    }
+}
+
+/// Calculates duration between two dates and returns (years, months).
 ///
 /// If `end` is "present", uses current date.
-fn calculate_duration(start: &str, end: &str) -> Result<String, Box<dyn std::error::Error>> {
+fn calculate_duration_parts(start: &str, end: &str) -> Result<(i32, i32), Box<dyn std::error::Error>> {
     let start_date = parse_year_month(start)?;
     let end_date = if end.to_lowercase() == "present" {
         chrono::Local::now().date_naive()
@@ -38,8 +86,15 @@ fn calculate_duration(start: &str, end: &str) -> Result<String, Box<dyn std::err
         parse_year_month(end)?
     };
 
-    let (years, months) = months_between(start_date, end_date);
-    Ok(format_duration(years, months))
+    Ok(months_between(start_date, end_date))
+}
+
+/// Sums multiple durations (years, months) into a single total duration.
+fn sum_durations(durations: &[(i32, i32)]) -> (i32, i32) {
+    let total_months: i32 = durations.iter().map(|(y, m)| y * 12 + m).sum();
+    let years = total_months / 12;
+    let months = total_months % 12;
+    (years, months)
 }
 
 /// Parses "YYYY-MM" string into NaiveDate (first day of the month).
@@ -94,6 +149,12 @@ fn format_duration(years: i32, months: i32) -> String {
     }
 }
 
+/// Formats duration as years only, rounding up if months >= 6.
+fn format_duration_years_only(years: i32, months: i32) -> String {
+    let rounded_years = if months >= 6 { years + 1 } else { years };
+    format!("{} {}", rounded_years, if rounded_years == 1 { "year" } else { "years" })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -131,5 +192,36 @@ mod tests {
         let input = r#"Started {{work_period: start="2022-12", end="2023-03"}} ago"#;
         let output = process(input);
         assert_eq!(output, "Started 3 months ago");
+    }
+
+    #[test]
+    fn test_sum_durations() {
+        let durations = vec![(2, 10), (3, 5), (2, 2)];
+        let (years, months) = sum_durations(&durations);
+        // 2*12+10 + 3*12+5 + 2*2+2 = 34 + 41 + 26 = 101 months = 8 years, 5 months
+        assert_eq!(years, 8);
+        assert_eq!(months, 5);
+    }
+
+    #[test]
+    fn test_format_duration_years_only() {
+        assert_eq!(format_duration_years_only(9, 2), "9 years"); // 9y2m rounds down to 9y
+        assert_eq!(format_duration_years_only(9, 6), "10 years"); // 9y6m rounds up to 10y
+        assert_eq!(format_duration_years_only(9, 11), "10 years"); // 9y11m rounds up to 10y
+        assert_eq!(format_duration_years_only(1, 0), "1 year"); // singular
+        assert_eq!(format_duration_years_only(0, 5), "0 years"); // less than 6 months = 0 years
+        assert_eq!(format_duration_years_only(0, 9), "1 year"); // 9 months rounds to 1 year
+    }
+
+    #[test]
+    fn test_total_work_period() {
+        let input = r#"
+Exp 1: {{work_period: start="2022-12", end="2023-03"}}
+Exp 2: {{work_period: start="2020-01", end="2020-07"}}
+Total: {{total_work_period}}
+"#;
+        let output = process(input);
+        // 3 months + 6 months = 9 months, rounds up to 1 year
+        assert!(output.contains("Total: 1 year"));
     }
 }

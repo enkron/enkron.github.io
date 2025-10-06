@@ -10,7 +10,7 @@
 
 ### Summary
 
-Devops engineer with a bachelor's degree in CS and near the seven years of
+Devops engineer with a bachelor's degree in CS and {{total_work_period}} of
 experience in some technologies and programming languages. I mainly act in a
 devops field: from automation of routine processes using scripting languages
 like Python and Bash to develop and maintain reliable systems for big data
@@ -71,7 +71,7 @@ teams.
 
 Maintained production and development infrastructures.
 
-| **[onsemi](https://onsemi.com) (full-time)** | **Nov 2021 - Oct 2022 (1 year)** |
+| **[onsemi](https://onsemi.com) (full-time)** | **Nov 2021 - Oct 2022 ({{work_period: start="2021-11", end="2022-10"}})** |
 | :- | -: |
 | Devops engineer | St Petersburg City, Russia |
 
@@ -91,7 +91,7 @@ logging, cleanup, provisioning new VMs and containers, networking problems
 
 Administered Atlassian stack (JIRA, Confluence, Bitbucket).
 
-| **[EPAM Systems](https://epam.com) (full-time)** | **Jul 2018 - Nov 2021 (3 years, 5 months)** |
+| **[EPAM Systems](https://epam.com) (full-time)** | **Jul 2018 - Nov 2021 ({{work_period: start="2018-07", end="2021-11"}})** |
 | :- | -: |
 | Systems engineer | St Petersburg City, Russia |
 
@@ -122,7 +122,7 @@ capabilities: EBS snapshots, RDS multi A-Z, S3 cross-region replication &c).
 
 Containerized custom application for big data processing using Docker.
 
-| **self-employed** | **May 2016 - Jun 2018 (2 years, 2 months)** |
+| **self-employed** | **May 2016 - Jun 2018 ({{work_period: start="2016-05", end="2018-06"}})** |
 | :- | -: |
 | Independent | St Petersburg City, Russia |
 

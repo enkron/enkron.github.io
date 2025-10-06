@@ -9,6 +9,7 @@ use walkdir::WalkDir;
 mod rend;
 use rend::Layout;
 mod pdf;
+mod work_period;
 
 const CONTENT_DIR: &str = "in";
 const DOWNLOAD_DIR: &str = "download";
@@ -38,6 +39,7 @@ impl Site {
 
         for mdfile in &mdfiles {
             let md = fs::read_to_string(PathBuf::from(CONTENT_DIR).join(mdfile))?;
+            let md = work_period::process(&md);
             let parser = Parser::new_ext(&md, Options::all());
 
             let mut body = String::new();
@@ -75,6 +77,7 @@ impl Site {
 
     fn export<P: AsRef<Path>>(f_in: P, f_out: P) -> Result<(), anyhow::Error> {
         let md = fs::read_to_string(PathBuf::from(CONTENT_DIR).join(f_in))?;
+        let md = work_period::process(&md);
         let mut pdf_path = PathBuf::from(DOWNLOAD_DIR).join(f_out);
 
         pdf_path.set_extension("pdf");

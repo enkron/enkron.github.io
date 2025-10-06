@@ -46,7 +46,7 @@ Buildbot, Prometheus AlertManager
 
 ## Work Experience
 
-| **[Morse Micro](https://morsemicro.com) (full-time)** | **Dec 2022 - Present (2 years, 1 month)** |
+| **[Morse Micro](https://morsemicro.com) (full-time)** | **Dec 2022 - Present ({{work_period: start="2022-12", end="present"}})** |
 | :- | -: |
 | Devops engineer | Sydney NSW, Australia |
 

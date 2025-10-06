@@ -65,15 +65,18 @@ jobs:
           path: github-pages
 
   test:
-    # Stub for future unit/integration tests applied to the binary or
-    # generated site itself
-    needs: build
     runs-on: ubuntu-22.04
     steps:
-      - name: check the site is ok
+      - name: install Rust toolchain
         run: |
-          #curl -L enkron.github.io
-          echo "GITHUB_SHA=$GITHUB_SHA"
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -qy
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: run unit tests
+        run: cargo test --release --verbose
 
   deploy:
     needs: [build, test]

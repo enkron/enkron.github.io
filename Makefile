@@ -2,7 +2,8 @@ out_files = pub download index.html cv.html
 
 .PHONY: site
 site:
-	@cargo r --release && python3 -m http.server 8080
+	@wasm-pack build --target web --out-dir web/pkg && \
+		cargo r --release && python3 -m http.server 8080
 
 .PHONY: clean
 clean:

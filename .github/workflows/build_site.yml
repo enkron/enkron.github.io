@@ -25,6 +25,10 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |sh -s -- -qy
           rustup --version
 
+      - name: install wasm-pack
+        run: |
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
       #- name: install and switch to rustup's nightly toolchain
       #  run: |
       #    rustup toolchain install nightly
@@ -33,6 +37,10 @@ jobs:
 
       - name: checkout repository
         uses: actions/checkout@v4
+
+      - name: build WASM module
+        run: |
+          wasm-pack build --target web --out-dir web/pkg
 
       - name: build and run the program
         run: |

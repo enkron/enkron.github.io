@@ -17,7 +17,13 @@ cargo run --release
 ```bash
 make site
 ```
-Builds the site and starts a local HTTP server on port 8080.
+Builds the WASM module, generates the site, and starts a local HTTP server on port 8080.
+
+### Build WASM module only
+```bash
+wasm-pack build --target web --out-dir web/pkg
+```
+Builds the dark mode WASM module to `web/pkg/`.
 
 ### Clean generated files
 ```bash
@@ -57,10 +63,16 @@ cargo clippy
 - Uses constants: `CONTENT_DIR = "in"`, `PUBLIC_DIR = "pub"`, `DOWNLOAD_DIR = "download"`
 
 **`src/rend.rs`**: HTML layout templates
-- `Layout::header()`: Navigation, meta tags, CSS links with cache-busting hashes
+- `Layout::header()`: Navigation, meta tags, CSS links with cache-busting hashes, dark mode toggle button
 - `Layout::body()`: Content wrapper
-- `Layout::footer()`: Build metadata (GitHub Actions env vars: `GITHUB_RUN_NUMBER`, `GITHUB_SHA`) and timestamp
+- `Layout::footer()`: Build metadata (GitHub Actions env vars: `GITHUB_RUN_NUMBER`, `GITHUB_SHA`), timestamp, and WASM module loader
 - CSS cache-busting: Computes SHA256 hashes of `css/main.css` and `web/hack.css` at compile time using `once_cell::Lazy` and embeds them as query strings
+
+**`src/lib.rs`**: WASM module for dark mode functionality
+- `main()`: Initializes theme from localStorage on page load
+- `toggle_theme()`: Switches between light and dark themes
+- `init_theme()`: Sets up theme state and event listeners for toggle button
+- Compiled to WebAssembly and loaded as ES6 module in footer
 
 **`src/pdf.rs`**: Custom PDF renderer (replaces `wkhtmltopdf`)
 - `render()`: Main entry point that converts Markdown to PDF bytes
@@ -76,17 +88,43 @@ cargo clippy
 - `once_cell`: Lazy static initialization for CSS hashes
 - `sha2`: SHA256 hashing for cache-busting
 - `anyhow`: Error handling
+- `wasm-bindgen`: Rust-WASM interop for dark mode toggle
+- `web-sys`: Web API bindings for DOM manipulation and localStorage
 
 ### File Naming Logic
 - `index.md` and `cv.md` → root directory as `index.html` and `cv.html`
 - Date-prefixed files: Split on first `-`, use date portion only (e.g., `2024-01-15-title.md` → `pub/2024-01-15.html`)
 - Other files → `pub/filename.html`
 
+## Dark Mode Feature
+
+The site includes a dark mode toggle implemented in WebAssembly:
+
+**CSS Variables** (`css/main.css`):
+- `:root` defines light theme colors
+- `[data-theme="dark"]` defines dark theme colors
+- All color values use CSS variables for seamless theme switching
+
+**WASM Module** (`src/lib.rs`):
+- Loads theme preference from browser localStorage
+- Applies theme on page load (before first paint to prevent flash)
+- Toggle button (☀️/🌙) in navigation switches themes
+- Theme preference persists across sessions
+
+**Benefits of WASM approach**:
+- Type-safe Rust code compiled to efficient WASM binary (~20KB)
+- No runtime JavaScript parsing overhead
+- Near-native performance
+- Shared codebase with main site generator
+
 ## CI/CD
 
 GitHub Actions workflow (`.github/workflows/build_site.yml`):
-1. Installs Rust toolchain
-2. Builds and runs: `cargo run --release`
-3. Archives and deploys to GitHub Pages
+1. Installs Rust toolchain and wasm-pack
+2. Builds WASM module: `wasm-pack build --target web --out-dir web/pkg`
+3. Builds and runs site generator: `cargo run --release`
+4. Archives and deploys to GitHub Pages (includes `web/pkg/` directory)
 
 The workflow runs on pushes to `main` and includes three jobs: `build`, `test` (stub), and `deploy`.
+
+**Note**: The CI workflow must install `wasm-pack` and build the WASM module before running the site generator.

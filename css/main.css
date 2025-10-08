@@ -1,3 +1,25 @@
+:root {
+    --bg-primary: #ffffff;
+    --text-primary: #000000;
+    --nav-bg: #4682b4;
+    --nav-text: #ffffff;
+    --nav-hover: #000000;
+    --link-color: #004aad;
+    --footer-bg: #4682b4;
+    --footer-text: #ffffff;
+}
+
+[data-theme="dark"] {
+    --bg-primary: #1a1a1a;
+    --text-primary: #e0e0e0;
+    --nav-bg: #2d4a5c;
+    --nav-text: #e0e0e0;
+    --nav-hover: #1a1a1a;
+    --link-color: #6ba3ff;
+    --footer-bg: #2d4a5c;
+    --footer-text: #e0e0e0;
+}
+
 #page-container {
     position: relative;
     min-height: 100vh;
@@ -39,12 +61,14 @@ body {
     line-height: 1.5;
     font-family: Hack, monospace;
     font-size: 12px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 footer {
     line-height: 1.5;
-    background: #4682b4;
-    color: #ffffff;
+    background: var(--footer-bg);
+    color: var(--footer-text);
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -68,7 +92,7 @@ a {
 }
 
 .navigation {
-    background: #4682b4;
+    background: var(--nav-bg);
 }
 
 .navigation ul {
@@ -99,15 +123,15 @@ nav {
 .navigation li a {
     display: block;
     padding: 1rem;
-    color: #ffffff;
-    background: #4682b4;
+    color: var(--nav-text);
+    background: var(--nav-bg);
     text-decoration: none;
     transition: background 0.3s ease-in-out;
 }
 
 .navigation li a:hover,
 .navigation li a:focus {
-    background: #000000;
+    background: var(--nav-hover);
     outline: none;
 }
 
@@ -121,8 +145,8 @@ nav {
 }
 
 #content-wrap {
-    background: #ffffff;
-    color: #000000;
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 #content-wrap *,
@@ -133,7 +157,7 @@ nav {
 }
 
 #content-wrap a {
-    color: #004aad !important;
+    color: var(--link-color) !important;
 }
 
 #content-wrap table {
@@ -148,7 +172,7 @@ nav {
     padding: 0;
     font-family: Hack, monospace;
     font-size: 12px;
-    color: #000000;
+    color: var(--text-primary);
 }
 
 #content-wrap table th {
@@ -158,4 +182,22 @@ nav {
 #content-wrap table th:last-child,
 #content-wrap table td:last-child {
     text-align: right;
+}
+
+.theme-toggle {
+    background: transparent;
+    border: none;
+    color: var(--nav-text);
+    cursor: pointer;
+    font-family: Hack, monospace;
+    font-size: 18px;
+    padding: 1rem;
+    transition: background 0.3s ease-in-out;
+    float: right;
+    margin-top: 5px;
+    margin-right: 10px;
+}
+
+.theme-toggle:hover {
+    background: var(--nav-hover);
 }

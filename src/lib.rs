@@ -39,7 +39,7 @@ pub fn toggle_theme() -> Result<(), JsValue> {
         .get_element_by_id("theme-icon")
         .ok_or("no theme-icon element")?;
 
-    icon_element.set_text_content(Some(if new_theme == "dark" { "🌙" } else { "☀️" }));
+    icon_element.set_text_content(Some(if new_theme == "dark" { "☽" } else { "✸" }));
 
     // Save to localStorage
     local_storage.set_item("theme", new_theme)?;

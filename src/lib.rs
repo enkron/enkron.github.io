@@ -67,7 +67,7 @@ fn init_theme() -> Result<(), JsValue> {
         let icon_element = document
             .get_element_by_id("theme-icon")
             .ok_or("no theme-icon element")?;
-        icon_element.set_text_content(Some("🌙"));
+        icon_element.set_text_content(Some("☽"));
     }
 
     // Add click event listener to toggle button

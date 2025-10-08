@@ -37,7 +37,7 @@ impl Layout {
                     <img class="logo" src="/favicon/favicon-32x32.png" alt="-__-"/>
                 </a>
                 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-                    <span id="theme-icon">☀️</span>
+                    <span id="theme-icon">✸</span>
                 </button>
                 <ul>
                     <li><a href="/pub/junkyard.html">junkyard</a></li>

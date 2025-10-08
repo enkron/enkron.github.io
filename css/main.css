@@ -3,7 +3,7 @@
     --text-primary: #000000;
     --nav-bg: #4682b4;
     --nav-text: #ffffff;
-    --nav-hover: #000000;
+    --nav-hover: #36648a;
     --link-color: #004aad;
     --footer-bg: #4682b4;
     --footer-text: #ffffff;
@@ -14,7 +14,7 @@
     --text-primary: #e0e0e0;
     --nav-bg: #2d4a5c;
     --nav-text: #e0e0e0;
-    --nav-hover: #1a1a1a;
+    --nav-hover: #1f3440;
     --link-color: #6ba3ff;
     --footer-bg: #2d4a5c;
     --footer-text: #e0e0e0;
@@ -127,6 +127,8 @@ nav {
     background: var(--nav-bg);
     text-decoration: none;
     transition: background 0.3s ease-in-out;
+    border-radius: 8px;
+    margin: 5px;
 }
 
 .navigation li a:hover,
@@ -196,6 +198,7 @@ nav {
     float: right;
     margin-top: 5px;
     margin-right: 10px;
+    border-radius: 8px;
 }
 
 .theme-toggle:hover {

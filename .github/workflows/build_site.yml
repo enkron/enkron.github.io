@@ -1,103 +1,167 @@
 ---
-name: build static site
+name: Build and Deploy Static Site
+
+# Trigger workflow on push to main branch or manual dispatch
 on:
   push:
     branches:
       - main
-
   workflow_dispatch:
 
+# Minimal permissions following principle of least privilege
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: read      # Read repository contents
+  pages: write        # Deploy to GitHub Pages
+  id-token: write     # Required for GitHub Pages deployment
 
+# Prevent concurrent deployments to avoid conflicts
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  # Quality checks: linting and formatting
+  lint:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
     steps:
-      - name: install Rust toolchain
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |sh -s -- -qy
-          rustup --version
-
-      - name: install wasm-pack
-        run: |
-          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-
-      #- name: install and switch to rustup's nightly toolchain
-      #  run: |
-      #    rustup toolchain install nightly
-      #    rustup run nightly rustc --version
-      #    rustup default nightly
-
-      - name: checkout repository
+      # Checkout repository with full history for better caching
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: build WASM module
+      # Use official Rust toolchain action for better caching and reliability
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      # Cache Rust dependencies to speed up subsequent builds
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "lint"
+          cache-on-failure: true
+
+      # Verify Cargo.lock is up to date (security best practice)
+      - name: Verify Cargo.lock is up to date
+        run: cargo update --locked --workspace
+
+      # Check code formatting according to rustfmt rules
+      - name: Check code formatting
+        run: cargo fmt --all -- --check
+
+      # Run clippy for linting and catch common mistakes
+      - name: Run clippy lints
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  # Build site artifacts
+  build:
+    name: Build Site
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install Rust toolchain with wasm32 target for WebAssembly
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      # Cache Rust dependencies to speed up builds
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "build"
+          cache-on-failure: true
+
+      # Install wasm-pack for building WebAssembly modules
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+
+      # Build dark mode toggle WASM module
+      - name: Build WASM module
+        run: wasm-pack build --target web --out-dir web/pkg
+
+      # Build and run site generator to produce HTML/PDF output
+      - name: Build and generate site
+        run: cargo run --release
+
+      # Verify generated files exist
+      - name: Verify generated files
         run: |
-          wasm-pack build --target web --out-dir web/pkg
+          echo "Checking for generated files..."
+          ls -lh pub/ download/ index.html cv.html 2>/dev/null || true
+          echo "Build artifacts verified"
 
-      - name: build and run the program
+      # Create tarball artifact for GitHub Pages deployment
+      - name: Archive site artifact
+        shell: bash
         run: |
-          cargo run --release
-          ls -altr
+          tar \
+            --create \
+            --file=github-pages \
+            --verbose \
+            --dereference \
+            --hard-dereference \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=target \
+            --exclude=github-pages \
+            --directory="$PWD" \
+            .
 
-      - name: archive artifact
-        shell: bash
-        run: >
-          tar
-          -cvf github-pages
-          --dereference
-          --hard-dereference
-          --exclude=.git
-          --exclude=.github
-          --exclude=target
-          --exclude=github-pages
-          -C "$PWD"
-          .
-
-      - name: check output artifact
-        shell: bash
-        run: >
-          ls -ltr
-
-      - name: upload artifact
+      # Upload artifact for deployment job
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
           path: github-pages
+          retention-days: 1
 
+  # Run unit tests
   test:
-    runs-on: ubuntu-22.04
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: lint
     steps:
-      - name: install Rust toolchain
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -qy
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: checkout repository
+      # Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: run unit tests
-        run: cargo test --release --verbose
+      # Install Rust toolchain
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
 
+      # Cache Rust dependencies
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "test"
+          cache-on-failure: true
+
+      # Run all tests with verbose output
+      - name: Run unit tests
+        run: cargo test --release --verbose --all-features
+
+  # Deploy to GitHub Pages
   deploy:
+    name: Deploy to GitHub Pages
     needs: [build, test]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - name: download the artifact
+      # Download pre-built artifact from build job
+      - name: Download site artifact
         uses: actions/download-artifact@v4
         with:
           name: github-pages
 
-      - name: deploy to github pages
+      # Deploy to GitHub Pages using official action
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

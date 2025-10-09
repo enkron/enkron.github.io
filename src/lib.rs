@@ -1,6 +1,12 @@
+#![warn(clippy::all, clippy::pedantic)]
 use wasm_bindgen::prelude::*;
 use web_sys::{window, HtmlElement};
 
+/// Initialize the web assembly module and synchronize the stored theme on load.
+///
+/// # Errors
+/// Returns an error if the DOM or `localStorage` cannot be accessed, or if the theme
+/// attribute fails to update.
 #[wasm_bindgen(start)]
 pub fn main() -> Result<(), JsValue> {
     // Initialize theme on page load
@@ -8,6 +14,11 @@ pub fn main() -> Result<(), JsValue> {
     Ok(())
 }
 
+/// Toggle the persisted theme between light and dark palette.
+///
+/// # Errors
+/// Returns an error when the DOM, its elements, or `localStorage` cannot be accessed
+/// or updated.
 #[wasm_bindgen]
 pub fn toggle_theme() -> Result<(), JsValue> {
     let window = window().ok_or("no window")?;

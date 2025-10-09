@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::pedantic)]
 use std::fmt::Write;
 use std::io::Write as IoWrite;
 
@@ -15,573 +16,703 @@ const HEADING3_FONT_SIZE: f32 = 11.0;
 const LINE_SPACING_FACTOR: f32 = 1.6;
 const BULLET_INDENT_POINTS: f32 = 18.0;
 
+#[derive(Copy, Clone)]
+struct HelveticaPair {
+    regular: f32,
+    bold: f32,
+}
+
+const DEFAULT_HELVETICA_WIDTH: HelveticaPair = HelveticaPair {
+    regular: 500.0,
+    bold: 556.0,
+};
+
+const HELVETICA_WIDTHS: &[(char, HelveticaPair)] = &[
+    (
+        ' ',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 278.0,
+        },
+    ),
+    (
+        '!',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        '"',
+        HelveticaPair {
+            regular: 355.0,
+            bold: 474.0,
+        },
+    ),
+    (
+        '#',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '$',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '%',
+        HelveticaPair {
+            regular: 889.0,
+            bold: 889.0,
+        },
+    ),
+    (
+        '&',
+        HelveticaPair {
+            regular: 667.0,
+            bold: 722.0,
+        },
+    ),
+    (
+        '\'',
+        HelveticaPair {
+            regular: 191.0,
+            bold: 278.0,
+        },
+    ),
+    (
+        '(',
+        HelveticaPair {
+            regular: 333.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        ')',
+        HelveticaPair {
+            regular: 333.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        '*',
+        HelveticaPair {
+            regular: 389.0,
+            bold: 389.0,
+        },
+    ),
+    (
+        '+',
+        HelveticaPair {
+            regular: 584.0,
+            bold: 584.0,
+        },
+    ),
+    (
+        ',',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 278.0,
+        },
+    ),
+    (
+        '-',
+        HelveticaPair {
+            regular: 333.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        '.',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 278.0,
+        },
+    ),
+    (
+        '/',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 278.0,
+        },
+    ),
+    (
+        '0',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '1',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '2',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '3',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '4',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '5',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '6',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '7',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '8',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '9',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        ':',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        ';',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        '<',
+        HelveticaPair {
+            regular: 584.0,
+            bold: 584.0,
+        },
+    ),
+    (
+        '=',
+        HelveticaPair {
+            regular: 584.0,
+            bold: 584.0,
+        },
+    ),
+    (
+        '>',
+        HelveticaPair {
+            regular: 584.0,
+            bold: 584.0,
+        },
+    ),
+    (
+        '?',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        '@',
+        HelveticaPair {
+            regular: 1015.0,
+            bold: 975.0,
+        },
+    ),
+    (
+        'A',
+        HelveticaPair {
+            regular: 667.0,
+            bold: 722.0,
+        },
+    ),
+    (
+        'B',
+        HelveticaPair {
+            regular: 667.0,
+            bold: 722.0,
+        },
+    ),
+    (
+        'C',
+        HelveticaPair {
+            regular: 722.0,
+            bold: 722.0,
+        },
+    ),
+    (
+        'D',
+        HelveticaPair {
+            regular: 722.0,
+            bold: 722.0,
+        },
+    ),
+    (
+        'E',
+        HelveticaPair {
+            regular: 667.0,
+            bold: 667.0,
+        },
+    ),
+    (
+        'F',
+        HelveticaPair {
+            regular: 611.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'G',
+        HelveticaPair {
+            regular: 778.0,
+            bold: 778.0,
+        },
+    ),
+    (
+        'H',
+        HelveticaPair {
+            regular: 722.0,
+            bold: 722.0,
+        },
+    ),
+    (
+        'I',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 278.0,
+        },
+    ),
+    (
+        'J',
+        HelveticaPair {
+            regular: 500.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        'K',
+        HelveticaPair {
+            regular: 667.0,
+            bold: 722.0,
+        },
+    ),
+    (
+        'L',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'M',
+        HelveticaPair {
+            regular: 833.0,
+            bold: 833.0,
+        },
+    ),
+    (
+        'N',
+        HelveticaPair {
+            regular: 722.0,
+            bold: 722.0,
+        },
+    ),
+    (
+        'O',
+        HelveticaPair {
+            regular: 778.0,
+            bold: 778.0,
+        },
+    ),
+    (
+        'P',
+        HelveticaPair {
+            regular: 667.0,
+            bold: 667.0,
+        },
+    ),
+    (
+        'Q',
+        HelveticaPair {
+            regular: 778.0,
+            bold: 778.0,
+        },
+    ),
+    (
+        'R',
+        HelveticaPair {
+            regular: 722.0,
+            bold: 722.0,
+        },
+    ),
+    (
+        'S',
+        HelveticaPair {
+            regular: 667.0,
+            bold: 667.0,
+        },
+    ),
+    (
+        'T',
+        HelveticaPair {
+            regular: 611.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'U',
+        HelveticaPair {
+            regular: 722.0,
+            bold: 722.0,
+        },
+    ),
+    (
+        'V',
+        HelveticaPair {
+            regular: 667.0,
+            bold: 667.0,
+        },
+    ),
+    (
+        'W',
+        HelveticaPair {
+            regular: 944.0,
+            bold: 944.0,
+        },
+    ),
+    (
+        'X',
+        HelveticaPair {
+            regular: 667.0,
+            bold: 667.0,
+        },
+    ),
+    (
+        'Y',
+        HelveticaPair {
+            regular: 667.0,
+            bold: 667.0,
+        },
+    ),
+    (
+        'Z',
+        HelveticaPair {
+            regular: 611.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        '[',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        '\\',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 278.0,
+        },
+    ),
+    (
+        ']',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        '^',
+        HelveticaPair {
+            regular: 469.0,
+            bold: 581.0,
+        },
+    ),
+    (
+        '_',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        '`',
+        HelveticaPair {
+            regular: 222.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        'a',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        'b',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'c',
+        HelveticaPair {
+            regular: 500.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        'd',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'e',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        'f',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        'g',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'h',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'i',
+        HelveticaPair {
+            regular: 222.0,
+            bold: 278.0,
+        },
+    ),
+    (
+        'j',
+        HelveticaPair {
+            regular: 222.0,
+            bold: 278.0,
+        },
+    ),
+    (
+        'k',
+        HelveticaPair {
+            regular: 500.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        'l',
+        HelveticaPair {
+            regular: 222.0,
+            bold: 278.0,
+        },
+    ),
+    (
+        'm',
+        HelveticaPair {
+            regular: 833.0,
+            bold: 889.0,
+        },
+    ),
+    (
+        'n',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'o',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'p',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'q',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'r',
+        HelveticaPair {
+            regular: 333.0,
+            bold: 389.0,
+        },
+    ),
+    (
+        's',
+        HelveticaPair {
+            regular: 500.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        't',
+        HelveticaPair {
+            regular: 278.0,
+            bold: 333.0,
+        },
+    ),
+    (
+        'u',
+        HelveticaPair {
+            regular: 556.0,
+            bold: 611.0,
+        },
+    ),
+    (
+        'v',
+        HelveticaPair {
+            regular: 500.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        'w',
+        HelveticaPair {
+            regular: 722.0,
+            bold: 778.0,
+        },
+    ),
+    (
+        'x',
+        HelveticaPair {
+            regular: 500.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        'y',
+        HelveticaPair {
+            regular: 500.0,
+            bold: 556.0,
+        },
+    ),
+    (
+        'z',
+        HelveticaPair {
+            regular: 500.0,
+            bold: 500.0,
+        },
+    ),
+    (
+        '{',
+        HelveticaPair {
+            regular: 334.0,
+            bold: 389.0,
+        },
+    ),
+    (
+        '|',
+        HelveticaPair {
+            regular: 260.0,
+            bold: 280.0,
+        },
+    ),
+    (
+        '}',
+        HelveticaPair {
+            regular: 334.0,
+            bold: 389.0,
+        },
+    ),
+    (
+        '~',
+        HelveticaPair {
+            regular: 584.0,
+            bold: 584.0,
+        },
+    ),
+    (
+        '•',
+        HelveticaPair {
+            regular: 350.0,
+            bold: 350.0,
+        },
+    ),
+];
 /// Get character width for Helvetica font (in 1000 units, scale by `font_size`/1000)
 fn helvetica_char_width(c: char, bold: bool) -> f32 {
     // Helvetica widths in 1000-unit em square
-    // Common characters only; unknown chars default to 500 units
-    match c {
-        ' ' => 278.0,
-        '!' => {
-            if bold {
-                333.0
-            } else {
-                278.0
-            }
-        }
-        '"' => {
-            if bold {
-                474.0
-            } else {
-                355.0
-            }
-        }
-        '#' => 556.0,
-        '$' => 556.0,
-        '%' => 889.0,
-        '&' => {
-            if bold {
-                722.0
-            } else {
-                667.0
-            }
-        }
-        '\'' => {
-            if bold {
-                278.0
-            } else {
-                191.0
-            }
-        }
-        '(' => {
-            if bold {
-                333.0
-            } else {
-                333.0
-            }
-        }
-        ')' => {
-            if bold {
-                333.0
-            } else {
-                333.0
-            }
-        }
-        '*' => {
-            if bold {
-                389.0
-            } else {
-                389.0
-            }
-        }
-        '+' => 584.0,
-        ',' => {
-            if bold {
-                278.0
-            } else {
-                278.0
-            }
-        }
-        '-' => {
-            if bold {
-                333.0
-            } else {
-                333.0
-            }
-        }
-        '.' => {
-            if bold {
-                278.0
-            } else {
-                278.0
-            }
-        }
-        '/' => {
-            if bold {
-                278.0
-            } else {
-                278.0
-            }
-        }
-        '0'..='9' => 556.0,
-        ':' => {
-            if bold {
-                333.0
-            } else {
-                278.0
-            }
-        }
-        ';' => {
-            if bold {
-                333.0
-            } else {
-                278.0
-            }
-        }
-        '<' => 584.0,
-        '=' => 584.0,
-        '>' => 584.0,
-        '?' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        '@' => {
-            if bold {
-                975.0
-            } else {
-                1015.0
-            }
-        }
-        'A' => {
-            if bold {
-                722.0
-            } else {
-                667.0
-            }
-        }
-        'B' => {
-            if bold {
-                722.0
-            } else {
-                667.0
-            }
-        }
-        'C' => {
-            if bold {
-                722.0
-            } else {
-                722.0
-            }
-        }
-        'D' => {
-            if bold {
-                722.0
-            } else {
-                722.0
-            }
-        }
-        'E' => {
-            if bold {
-                667.0
-            } else {
-                667.0
-            }
-        }
-        'F' => {
-            if bold {
-                611.0
-            } else {
-                611.0
-            }
-        }
-        'G' => {
-            if bold {
-                778.0
-            } else {
-                778.0
-            }
-        }
-        'H' => {
-            if bold {
-                722.0
-            } else {
-                722.0
-            }
-        }
-        'I' => {
-            if bold {
-                278.0
-            } else {
-                278.0
-            }
-        }
-        'J' => {
-            if bold {
-                556.0
-            } else {
-                500.0
-            }
-        }
-        'K' => {
-            if bold {
-                722.0
-            } else {
-                667.0
-            }
-        }
-        'L' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        'M' => {
-            if bold {
-                833.0
-            } else {
-                833.0
-            }
-        }
-        'N' => {
-            if bold {
-                722.0
-            } else {
-                722.0
-            }
-        }
-        'O' => {
-            if bold {
-                778.0
-            } else {
-                778.0
-            }
-        }
-        'P' => {
-            if bold {
-                667.0
-            } else {
-                667.0
-            }
-        }
-        'Q' => {
-            if bold {
-                778.0
-            } else {
-                778.0
-            }
-        }
-        'R' => {
-            if bold {
-                722.0
-            } else {
-                722.0
-            }
-        }
-        'S' => {
-            if bold {
-                667.0
-            } else {
-                667.0
-            }
-        }
-        'T' => {
-            if bold {
-                611.0
-            } else {
-                611.0
-            }
-        }
-        'U' => {
-            if bold {
-                722.0
-            } else {
-                722.0
-            }
-        }
-        'V' => {
-            if bold {
-                667.0
-            } else {
-                667.0
-            }
-        }
-        'W' => {
-            if bold {
-                944.0
-            } else {
-                944.0
-            }
-        }
-        'X' => {
-            if bold {
-                667.0
-            } else {
-                667.0
-            }
-        }
-        'Y' => {
-            if bold {
-                667.0
-            } else {
-                667.0
-            }
-        }
-        'Z' => {
-            if bold {
-                611.0
-            } else {
-                611.0
-            }
-        }
-        '[' => {
-            if bold {
-                333.0
-            } else {
-                278.0
-            }
-        }
-        '\\' => {
-            if bold {
-                278.0
-            } else {
-                278.0
-            }
-        }
-        ']' => {
-            if bold {
-                333.0
-            } else {
-                278.0
-            }
-        }
-        '^' => {
-            if bold {
-                581.0
-            } else {
-                469.0
-            }
-        }
-        '_' => {
-            if bold {
-                556.0
-            } else {
-                556.0
-            }
-        }
-        '`' => {
-            if bold {
-                333.0
-            } else {
-                222.0
-            }
-        }
-        'a' => {
-            if bold {
-                556.0
-            } else {
-                556.0
-            }
-        }
-        'b' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        'c' => {
-            if bold {
-                556.0
-            } else {
-                500.0
-            }
-        }
-        'd' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        'e' => {
-            if bold {
-                556.0
-            } else {
-                556.0
-            }
-        }
-        'f' => {
-            if bold {
-                333.0
-            } else {
-                278.0
-            }
-        }
-        'g' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        'h' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        'i' => {
-            if bold {
-                278.0
-            } else {
-                222.0
-            }
-        }
-        'j' => {
-            if bold {
-                278.0
-            } else {
-                222.0
-            }
-        }
-        'k' => {
-            if bold {
-                556.0
-            } else {
-                500.0
-            }
-        }
-        'l' => {
-            if bold {
-                278.0
-            } else {
-                222.0
-            }
-        }
-        'm' => {
-            if bold {
-                889.0
-            } else {
-                833.0
-            }
-        }
-        'n' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        'o' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        'p' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        'q' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        'r' => {
-            if bold {
-                389.0
-            } else {
-                333.0
-            }
-        }
-        's' => {
-            if bold {
-                556.0
-            } else {
-                500.0
-            }
-        }
-        't' => {
-            if bold {
-                333.0
-            } else {
-                278.0
-            }
-        }
-        'u' => {
-            if bold {
-                611.0
-            } else {
-                556.0
-            }
-        }
-        'v' => {
-            if bold {
-                556.0
-            } else {
-                500.0
-            }
-        }
-        'w' => {
-            if bold {
-                778.0
-            } else {
-                722.0
-            }
-        }
-        'x' => {
-            if bold {
-                556.0
-            } else {
-                500.0
-            }
-        }
-        'y' => {
-            if bold {
-                556.0
-            } else {
-                500.0
-            }
-        }
-        'z' => {
-            if bold {
-                500.0
-            } else {
-                500.0
-            }
-        }
-        '{' => {
-            if bold {
-                389.0
-            } else {
-                334.0
-            }
-        }
-        '|' => {
-            if bold {
-                280.0
-            } else {
-                260.0
-            }
-        }
-        '}' => {
-            if bold {
-                389.0
-            } else {
-                334.0
-            }
-        }
-        '~' => {
-            if bold {
-                584.0
-            } else {
-                584.0
-            }
-        }
-        '•' => {
-            if bold {
-                350.0
-            } else {
-                350.0
-            }
-        }
-        _ => {
-            if bold {
-                556.0
-            } else {
-                500.0
-            }
-        } // Default for unknown chars
+    let metrics = HELVETICA_WIDTHS
+        .iter()
+        .find(|(ch, _)| *ch == c)
+        .map_or(DEFAULT_HELVETICA_WIDTH, |(_, metrics)| *metrics);
+
+    if bold {
+        metrics.bold
+    } else {
+        metrics.regular
     }
 }
 
@@ -618,166 +749,16 @@ enum Block {
 }
 
 fn parse_markdown(input: &str) -> Vec<Block> {
-    let mut blocks = Vec::new();
     let parser = Parser::new_ext(
         input,
         Options::ENABLE_TABLES | Options::ENABLE_STRIKETHROUGH,
     );
 
-    let mut inline_stack: Vec<InlineContainer> = Vec::new();
-    let mut list_stack: Vec<Vec<Vec<Inline>>> = Vec::new();
-    let mut table_stack: Vec<TableState> = Vec::new();
-    let mut block_stack: Vec<BlockContext> = Vec::new();
-
+    let mut state = MarkdownParser::new();
     for event in parser {
-        match event {
-            Event::Start(tag) => match tag {
-                Tag::Paragraph => {
-                    inline_stack.push(InlineContainer::Plain(Vec::new()));
-                    block_stack.push(BlockContext::Paragraph);
-                }
-                Tag::Heading(level, _, _) => {
-                    inline_stack.push(InlineContainer::Plain(Vec::new()));
-                    block_stack.push(BlockContext::Heading(heading_level_number(level)));
-                }
-                Tag::List(_) => {
-                    list_stack.push(Vec::new());
-                    block_stack.push(BlockContext::List);
-                }
-                Tag::Item => {
-                    inline_stack.push(InlineContainer::Plain(Vec::new()));
-                    block_stack.push(BlockContext::ListItem);
-                }
-                Tag::Table(_) => {
-                    table_stack.push(TableState::new());
-                    block_stack.push(BlockContext::Table);
-                }
-                Tag::TableHead => {
-                    if let Some(state) = table_stack.last_mut() {
-                        state.in_head = true;
-                        state.start_row(); // Start a row for header cells
-                    }
-                    block_stack.push(BlockContext::TableHead);
-                }
-                Tag::TableRow => {
-                    if let Some(state) = table_stack.last_mut() {
-                        state.start_row();
-                    }
-                    block_stack.push(BlockContext::TableRow);
-                }
-                Tag::TableCell => {
-                    inline_stack.push(InlineContainer::Plain(Vec::new()));
-                    block_stack.push(BlockContext::TableCell);
-                }
-                Tag::Strong => inline_stack.push(InlineContainer::Strong(Vec::new())),
-                Tag::Link(_, _, _) => inline_stack.push(InlineContainer::Link(Vec::new())),
-                Tag::Emphasis => inline_stack.push(InlineContainer::Plain(Vec::new())),
-                _ => block_stack.push(BlockContext::Ignored),
-            },
-            Event::End(tag) => match tag {
-                Tag::Paragraph => {
-                    if let Some(InlineContainer::Plain(inlines)) = inline_stack.pop() {
-                        if let Some(BlockContext::Paragraph) = block_stack.pop() {
-                            if !is_all_whitespace(&inlines) {
-                                blocks.push(Block::Paragraph(inlines));
-                            }
-                        }
-                    }
-                }
-                Tag::Heading(_, _, _) => {
-                    if let Some(InlineContainer::Plain(inlines)) = inline_stack.pop() {
-                        if let Some(BlockContext::Heading(level)) = block_stack.pop() {
-                            blocks.push(Block::Heading {
-                                level,
-                                content: inlines,
-                            });
-                        }
-                    }
-                }
-                Tag::List(_) => {
-                    if let Some(items) = list_stack.pop() {
-                        if let Some(BlockContext::List) = block_stack.pop() {
-                            if !items.is_empty() {
-                                blocks.push(Block::BulletList(items));
-                            }
-                        }
-                    }
-                }
-                Tag::Item => {
-                    if let Some(InlineContainer::Plain(inlines)) = inline_stack.pop() {
-                        if let Some(BlockContext::ListItem) = block_stack.pop() {
-                            if let Some(list) = list_stack.last_mut() {
-                                if !is_all_whitespace(&inlines) {
-                                    list.push(inlines);
-                                }
-                            }
-                        }
-                    }
-                }
-                Tag::Table(_) => {
-                    if let Some(state) = table_stack.pop() {
-                        if let Some(BlockContext::Table) = block_stack.pop() {
-                            if !state.rows.is_empty() {
-                                blocks.push(Block::Table(state.rows));
-                            }
-                        }
-                    }
-                }
-                Tag::TableHead => {
-                    if let Some(BlockContext::TableHead) = block_stack.pop() {
-                        if let Some(state) = table_stack.last_mut() {
-                            state.finish_row(); // Finish the header row
-                            state.in_head = false;
-                        }
-                    }
-                }
-                Tag::TableRow => {
-                    if let Some(BlockContext::TableRow) = block_stack.pop() {
-                        if let Some(state) = table_stack.last_mut() {
-                            state.finish_row();
-                        }
-                    }
-                }
-                Tag::TableCell => {
-                    if let Some(InlineContainer::Plain(inlines)) = inline_stack.pop() {
-                        if let Some(BlockContext::TableCell) = block_stack.pop() {
-                            if let Some(state) = table_stack.last_mut() {
-                                state.push_cell(inlines);
-                            }
-                        }
-                    }
-                }
-                Tag::Strong => {
-                    if let Some(InlineContainer::Strong(content)) = inline_stack.pop() {
-                        push_inline(&mut inline_stack, Inline::Strong(content));
-                    }
-                }
-                Tag::Link(_, _, _) => {
-                    if let Some(InlineContainer::Link(content)) = inline_stack.pop() {
-                        push_inline(&mut inline_stack, Inline::Link(content));
-                    }
-                }
-                Tag::Emphasis => {
-                    if let Some(InlineContainer::Plain(content)) = inline_stack.pop() {
-                        push_inline(&mut inline_stack, Inline::Strong(content));
-                    }
-                }
-                _ => {
-                    block_stack.pop();
-                }
-            },
-            Event::Text(text) => push_text(&mut inline_stack, &text),
-            Event::Code(text) => push_inline(&mut inline_stack, Inline::Text(text.into_string())),
-            Event::SoftBreak => push_text(&mut inline_stack, " "),
-            Event::HardBreak => push_inline(&mut inline_stack, Inline::LineBreak),
-            Event::Rule => {
-                blocks.push(Block::Paragraph(vec![Inline::Text(String::new())]));
-            }
-            Event::Html(_) | Event::TaskListMarker(_) | Event::FootnoteReference(_) => {}
-        }
+        state.handle_event(event);
     }
-
-    blocks
+    state.finish()
 }
 
 #[derive(Debug)]
@@ -817,7 +798,7 @@ impl TableState {
         if let Some(mut row) = self.current_row.take() {
             // Include all non-empty rows (both header and body rows)
             if row.iter().any(|cell| !is_all_whitespace(cell)) {
-                self.rows.push(row.drain(..).collect());
+                self.rows.push(std::mem::take(&mut row));
             }
         }
     }
@@ -836,6 +817,208 @@ enum BlockContext {
     Ignored,
 }
 
+struct MarkdownParser {
+    blocks: Vec<Block>,
+    inline_stack: Vec<InlineContainer>,
+    list_stack: Vec<Vec<Vec<Inline>>>,
+    table_stack: Vec<TableState>,
+    block_stack: Vec<BlockContext>,
+}
+
+impl MarkdownParser {
+    fn new() -> Self {
+        Self {
+            blocks: Vec::new(),
+            inline_stack: Vec::new(),
+            list_stack: Vec::new(),
+            table_stack: Vec::new(),
+            block_stack: Vec::new(),
+        }
+    }
+
+    fn handle_event(&mut self, event: Event<'_>) {
+        match event {
+            Event::Start(tag) => self.handle_start_tag(&tag),
+            Event::End(tag) => self.handle_end_tag(&tag),
+            Event::Text(text) => push_text(&mut self.inline_stack, text.as_ref()),
+            Event::Code(text) => {
+                push_inline(&mut self.inline_stack, Inline::Text(text.into_string()));
+            }
+            Event::SoftBreak => push_text(&mut self.inline_stack, " "),
+            Event::HardBreak => push_inline(&mut self.inline_stack, Inline::LineBreak),
+            Event::Rule => self
+                .blocks
+                .push(Block::Paragraph(vec![Inline::Text(String::new())])),
+            Event::Html(_) | Event::TaskListMarker(_) | Event::FootnoteReference(_) => {}
+        }
+    }
+
+    fn handle_start_tag(&mut self, tag: &Tag<'_>) {
+        match tag {
+            Tag::Paragraph => {
+                self.inline_stack.push(InlineContainer::Plain(Vec::new()));
+                self.block_stack.push(BlockContext::Paragraph);
+            }
+            Tag::Heading(level, _, _) => {
+                self.inline_stack.push(InlineContainer::Plain(Vec::new()));
+                self.block_stack
+                    .push(BlockContext::Heading(heading_level_number(*level)));
+            }
+            Tag::List(_) => {
+                self.list_stack.push(Vec::new());
+                self.block_stack.push(BlockContext::List);
+            }
+            Tag::Item => {
+                self.inline_stack.push(InlineContainer::Plain(Vec::new()));
+                self.block_stack.push(BlockContext::ListItem);
+            }
+            Tag::Table(_) => {
+                self.table_stack.push(TableState::new());
+                self.block_stack.push(BlockContext::Table);
+            }
+            Tag::TableHead => {
+                if let Some(state) = self.table_stack.last_mut() {
+                    state.in_head = true;
+                    state.start_row();
+                }
+                self.block_stack.push(BlockContext::TableHead);
+            }
+            Tag::TableRow => {
+                if let Some(state) = self.table_stack.last_mut() {
+                    state.start_row();
+                }
+                self.block_stack.push(BlockContext::TableRow);
+            }
+            Tag::TableCell => {
+                self.inline_stack.push(InlineContainer::Plain(Vec::new()));
+                self.block_stack.push(BlockContext::TableCell);
+            }
+            Tag::Strong => self.inline_stack.push(InlineContainer::Strong(Vec::new())),
+            Tag::Link(_, _, _) => self.inline_stack.push(InlineContainer::Link(Vec::new())),
+            Tag::Emphasis => self.inline_stack.push(InlineContainer::Plain(Vec::new())),
+            _ => self.block_stack.push(BlockContext::Ignored),
+        }
+    }
+
+    fn handle_end_tag(&mut self, tag: &Tag<'_>) {
+        match tag {
+            Tag::Paragraph => self.finish_paragraph(),
+            Tag::Heading(_, _, _) => self.finish_heading(),
+            Tag::List(_) => self.finish_list(),
+            Tag::Item => self.finish_list_item(),
+            Tag::Table(_) => self.finish_table(),
+            Tag::TableHead => self.finish_table_head(),
+            Tag::TableRow => self.finish_table_row(),
+            Tag::TableCell => self.finish_table_cell(),
+            Tag::Strong => self.finish_strong(),
+            Tag::Link(_, _, _) => self.finish_link(),
+            Tag::Emphasis => self.finish_emphasis(),
+            _ => {
+                self.block_stack.pop();
+            }
+        }
+    }
+
+    fn finish(self) -> Vec<Block> {
+        self.blocks
+    }
+
+    fn finish_paragraph(&mut self) {
+        if let (Some(InlineContainer::Plain(inlines)), Some(BlockContext::Paragraph)) =
+            (self.inline_stack.pop(), self.block_stack.pop())
+        {
+            if !is_all_whitespace(&inlines) {
+                self.blocks.push(Block::Paragraph(inlines));
+            }
+        }
+    }
+
+    fn finish_heading(&mut self) {
+        if let (Some(InlineContainer::Plain(inlines)), Some(BlockContext::Heading(level))) =
+            (self.inline_stack.pop(), self.block_stack.pop())
+        {
+            self.blocks.push(Block::Heading {
+                level,
+                content: inlines,
+            });
+        }
+    }
+
+    fn finish_list(&mut self) {
+        if let Some(items) = self.list_stack.pop() {
+            if matches!(self.block_stack.pop(), Some(BlockContext::List)) && !items.is_empty() {
+                self.blocks.push(Block::BulletList(items));
+            }
+        }
+    }
+
+    fn finish_list_item(&mut self) {
+        if let (Some(InlineContainer::Plain(inlines)), Some(BlockContext::ListItem)) =
+            (self.inline_stack.pop(), self.block_stack.pop())
+        {
+            if let Some(list) = self.list_stack.last_mut() {
+                if !is_all_whitespace(&inlines) {
+                    list.push(inlines);
+                }
+            }
+        }
+    }
+
+    fn finish_table(&mut self) {
+        if let Some(state) = self.table_stack.pop() {
+            if matches!(self.block_stack.pop(), Some(BlockContext::Table)) && !state.rows.is_empty()
+            {
+                self.blocks.push(Block::Table(state.rows));
+            }
+        }
+    }
+
+    fn finish_table_head(&mut self) {
+        if matches!(self.block_stack.pop(), Some(BlockContext::TableHead)) {
+            if let Some(state) = self.table_stack.last_mut() {
+                state.finish_row();
+                state.in_head = false;
+            }
+        }
+    }
+
+    fn finish_table_row(&mut self) {
+        if matches!(self.block_stack.pop(), Some(BlockContext::TableRow)) {
+            if let Some(state) = self.table_stack.last_mut() {
+                state.finish_row();
+            }
+        }
+    }
+
+    fn finish_table_cell(&mut self) {
+        if let (Some(InlineContainer::Plain(inlines)), Some(BlockContext::TableCell)) =
+            (self.inline_stack.pop(), self.block_stack.pop())
+        {
+            if let Some(state) = self.table_stack.last_mut() {
+                state.push_cell(inlines);
+            }
+        }
+    }
+
+    fn finish_strong(&mut self) {
+        if let Some(InlineContainer::Strong(content)) = self.inline_stack.pop() {
+            push_inline(&mut self.inline_stack, Inline::Strong(content));
+        }
+    }
+
+    fn finish_link(&mut self) {
+        if let Some(InlineContainer::Link(content)) = self.inline_stack.pop() {
+            push_inline(&mut self.inline_stack, Inline::Link(content));
+        }
+    }
+
+    fn finish_emphasis(&mut self) {
+        if let Some(InlineContainer::Plain(content)) = self.inline_stack.pop() {
+            push_inline(&mut self.inline_stack, Inline::Strong(content));
+        }
+    }
+}
+
 fn heading_level_number(level: HeadingLevel) -> u32 {
     match level {
         HeadingLevel::H1 => 1,
@@ -847,18 +1030,18 @@ fn heading_level_number(level: HeadingLevel) -> u32 {
     }
 }
 
-fn push_inline(stack: &mut Vec<InlineContainer>, inline: Inline) {
+fn push_inline(stack: &mut [InlineContainer], inline: Inline) {
     if let Some(container) = stack.last_mut() {
         match container {
             InlineContainer::Plain(inlines) | InlineContainer::Strong(inlines) => {
-                inlines.push(inline)
+                inlines.push(inline);
             }
             InlineContainer::Link(content) => content.push(inline),
         }
     }
 }
 
-fn push_text(stack: &mut Vec<InlineContainer>, text: &str) {
+fn push_text(stack: &mut [InlineContainer], text: &str) {
     if let Some(container) = stack.last_mut() {
         match container {
             InlineContainer::Plain(inlines)
@@ -878,8 +1061,7 @@ fn is_all_whitespace(inlines: &[Inline]) -> bool {
     inlines.iter().all(|inline| match inline {
         Inline::Text(text) => text.trim().is_empty(),
         Inline::LineBreak => true,
-        Inline::Strong(children) => is_all_whitespace(children),
-        Inline::Link(children) => is_all_whitespace(children),
+        Inline::Strong(children) | Inline::Link(children) => is_all_whitespace(children),
     })
 }
 
@@ -919,8 +1101,7 @@ impl PdfPage {
         let escaped = escape_pdf_text(text);
         let _ = writeln!(
             self.content,
-            "BT /{} {} Tf 1 0 0 1 {:.2} {:.2} Tm ({}) Tj ET",
-            font_name, size, x, y, escaped
+            "BT /{font_name} {size} Tf 1 0 0 1 {x:.2} {y:.2} Tm ({escaped}) Tj ET"
         );
     }
 }
@@ -1270,8 +1451,9 @@ fn collect_plain_text(inlines: &[Inline], output: &mut String) {
     for inline in inlines {
         match inline {
             Inline::Text(text) => output.push_str(text),
-            Inline::Strong(children) => collect_plain_text(children, output),
-            Inline::Link(children) => collect_plain_text(children, output),
+            Inline::Strong(children) | Inline::Link(children) => {
+                collect_plain_text(children, output);
+            }
             Inline::LineBreak => output.push('\n'),
         }
     }
@@ -1307,7 +1489,7 @@ fn escape_pdf_text(text: &str) -> String {
 
 fn write_object(buffer: &mut Vec<u8>, offsets: &mut [usize], id: usize, content: &str) {
     offsets[id] = buffer.len();
-    let _ = write!(buffer, "{} 0 obj\n{}\nendobj\n", id, content);
+    let _ = write!(buffer, "{id} 0 obj\n{content}\nendobj\n");
 }
 
 fn write_stream(buffer: &mut Vec<u8>, offsets: &mut [usize], id: usize, data: &str) {
@@ -1344,7 +1526,7 @@ fn write_pdf(pages: &[PdfPage]) -> Vec<u8> {
     let mut kids = String::new();
     for i in 0..page_count {
         let page_id = 3 + i;
-        let _ = write!(kids, "{} 0 R ", page_id);
+        let _ = write!(kids, "{page_id} 0 R ");
     }
     write_object(
         &mut buffer,
@@ -1367,8 +1549,7 @@ fn write_pdf(pages: &[PdfPage]) -> Vec<u8> {
         content_ids.push(content_id);
 
         let page_dict = format!(
-            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {:.2} {:.2}] /Resources << /Font << /F1 {} 0 R /F2 {} 0 R >> >> /Contents {} 0 R >>",
-            PAGE_WIDTH, PAGE_HEIGHT, font_regular_id, font_bold_id, content_id
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {PAGE_WIDTH:.2} {PAGE_HEIGHT:.2}] /Resources << /Font << /F1 {font_regular_id} 0 R /F2 {font_bold_id} 0 R >> >> /Contents {content_id} 0 R >>"
         );
         write_object(&mut buffer, &mut offsets, page_id, &page_dict);
     }
@@ -1393,9 +1574,8 @@ fn write_pdf(pages: &[PdfPage]) -> Vec<u8> {
     let xref_offset = buffer.len();
     let _ = write!(buffer, "xref\n0 {}\n", total_objects + 1);
     buffer.extend_from_slice(b"0000000000 65535 f \n");
-    for id in 1..=total_objects {
-        let offset = offsets[id];
-        let _ = write!(buffer, "{:010} 00000 n \n", offset);
+    for offset in offsets.iter().skip(1).take(total_objects) {
+        let _ = writeln!(buffer, "{offset:010} 00000 n ");
     }
 
     let _ = write!(

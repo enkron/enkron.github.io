@@ -1,5 +1,7 @@
+#![warn(clippy::all, clippy::pedantic)]
 use chrono::{Datelike, NaiveDate};
 use regex::Regex;
+use std::convert::TryFrom;
 use std::fs;
 
 /// Processes work period markers in markdown and replaces them with calculated durations.
@@ -7,7 +9,7 @@ use std::fs;
 /// Syntax:
 /// - `{{work_period: start="YYYY-MM", end="present"}}` → "2 years, 10 months"
 /// - `{{work_period: start="YYYY-MM", end="YYYY-MM"}}` → "3 years, 5 months"
-/// - `{{total_work_period}}` → sum of all work_period markers (reads from cv.md if needed)
+/// - `{{total_work_period}}` → sum of all `work_period` markers (reads from cv.md if needed)
 ///
 /// Example:
 /// ```
@@ -22,22 +24,25 @@ pub fn process(markdown: &str) -> String {
     let re = Regex::new(r#"\{\{work_period:\s*start="([^"]+)",?\s*end="([^"]+)"\}\}"#)
         .expect("Invalid regex");
 
-    let after_work_periods = re.replace_all(markdown, |caps: &regex::Captures| {
-        let start = &caps[1];
-        let end = &caps[2];
+    let after_work_periods = re
+        .replace_all(markdown, |caps: &regex::Captures| {
+            let start = &caps[1];
+            let end = &caps[2];
 
-        match calculate_duration_parts(start, end) {
-            Ok((years, months)) => {
-                durations.push((years, months));
-                format_duration(years, months)
+            match calculate_duration_parts(start, end) {
+                Ok((years, months)) => {
+                    durations.push((years, months));
+                    format_duration(years, months)
+                }
+                Err(e) => {
+                    eprintln!(
+                        "Warning: Failed to parse work period (start={start}, end={end}): {e}"
+                    );
+                    format!("{{{{work_period: start=\"{start}\", end=\"{end}\"}}}}")
+                }
             }
-            Err(e) => {
-                eprintln!("Warning: Failed to parse work period (start={start}, end={end}): {e}");
-                format!("{{{{work_period: start=\"{start}\", end=\"{end}\"}}}}")
-            }
-        }
-    })
-    .to_string();
+        })
+        .to_string();
 
     // Second pass: replace total_work_period with sum (years only, rounded)
     // If no work periods found in current file but total_work_period exists, read from cv.md
@@ -46,7 +51,10 @@ pub fn process(markdown: &str) -> String {
     }
 
     let total = sum_durations(&durations);
-    after_work_periods.replace("{{total_work_period}}", &format_duration_years_only(total.0, total.1))
+    after_work_periods.replace(
+        "{{total_work_period}}",
+        &format_duration_years_only(total.0, total.1),
+    )
 }
 
 /// Extracts work period durations from cv.md file.
@@ -78,7 +86,10 @@ fn extract_durations_from_cv() -> Vec<(i32, i32)> {
 /// Calculates duration between two dates and returns (years, months).
 ///
 /// If `end` is "present", uses current date.
-fn calculate_duration_parts(start: &str, end: &str) -> Result<(i32, i32), Box<dyn std::error::Error>> {
+fn calculate_duration_parts(
+    start: &str,
+    end: &str,
+) -> Result<(i32, i32), Box<dyn std::error::Error>> {
     let start_date = parse_year_month(start)?;
     let end_date = if end.to_lowercase() == "present" {
         chrono::Local::now().date_naive()
@@ -97,7 +108,7 @@ fn sum_durations(durations: &[(i32, i32)]) -> (i32, i32) {
     (years, months)
 }
 
-/// Parses "YYYY-MM" string into NaiveDate (first day of the month).
+/// Parses "YYYY-MM" string into `NaiveDate` (first day of the month).
 fn parse_year_month(date_str: &str) -> Result<NaiveDate, Box<dyn std::error::Error>> {
     let parts: Vec<&str> = date_str.split('-').collect();
     if parts.len() != 2 {
@@ -114,7 +125,9 @@ fn parse_year_month(date_str: &str) -> Result<NaiveDate, Box<dyn std::error::Err
 /// Calculates years and months between two dates.
 fn months_between(start: NaiveDate, end: NaiveDate) -> (i32, i32) {
     let mut years = end.year() - start.year();
-    let mut months = end.month() as i32 - start.month() as i32;
+    let end_month = i32::try_from(end.month()).expect("month fits in i32");
+    let start_month = i32::try_from(start.month()).expect("month fits in i32");
+    let mut months = end_month - start_month;
 
     if months < 0 {
         years -= 1;
@@ -152,7 +165,11 @@ fn format_duration(years: i32, months: i32) -> String {
 /// Formats duration as years only, rounding up if months >= 6.
 fn format_duration_years_only(years: i32, months: i32) -> String {
     let rounded_years = if months >= 6 { years + 1 } else { years };
-    format!("{} {}", rounded_years, if rounded_years == 1 { "year" } else { "years" })
+    format!(
+        "{} {}",
+        rounded_years,
+        if rounded_years == 1 { "year" } else { "years" }
+    )
 }
 
 #[cfg(test)]

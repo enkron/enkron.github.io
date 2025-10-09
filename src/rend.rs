@@ -1,13 +1,13 @@
-use once_cell::sync::Lazy;
+#![warn(clippy::all, clippy::pedantic)]
 use sha2::{Digest, Sha256};
 
 // Hash the CSS bytes at compile time and reuse the digest when templating the head
 // so the generated HTML gets a cache-busting query string whenever these files change.
 // Browsers treat `?v=<hash>` as a new resource, which avoids manual version bumps.
-static MAIN_CSS_HASH: Lazy<String> =
-    Lazy::new(|| format!("{:x}", Sha256::digest(include_bytes!("../css/main.css"))));
-static HACK_CSS_HASH: Lazy<String> =
-    Lazy::new(|| format!("{:x}", Sha256::digest(include_bytes!("../web/hack.css"))));
+static MAIN_CSS_HASH: std::sync::LazyLock<String> =
+    std::sync::LazyLock::new(|| format!("{:x}", Sha256::digest(include_bytes!("../css/main.css"))));
+static HACK_CSS_HASH: std::sync::LazyLock<String> =
+    std::sync::LazyLock::new(|| format!("{:x}", Sha256::digest(include_bytes!("../web/hack.css"))));
 
 pub struct Layout;
 impl Layout {

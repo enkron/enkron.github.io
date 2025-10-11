@@ -57,6 +57,34 @@ cargo check
 cargo clippy
 ```
 
+### Git hooks
+Install pre-push hook for automated code quality checks:
+```bash
+./hooks/install-hooks.sh
+```
+
+**Hook architecture:**
+- Location: `hooks/pre-push` (version-controlled)
+- Installation: Symlinked to `.git/hooks/pre-push` via install script
+- Trigger: Runs automatically before `git push`
+- Validation: Formatting (rustfmt), linting (clippy), tests
+- Bypass: `git push --no-verify` (discouraged)
+
+**Design rationale:**
+- Version-controlled hooks enable team consistency
+- Symlink approach: hooks update automatically with `git pull`
+- Pre-push (not pre-commit): Allows local WIP, validates before sharing
+- Fast feedback: Catches issues before CI pipeline
+
+**Hook structure:**
+```
+hooks/
+├── pre-push           # Hook script (executable)
+└── install-hooks.sh   # Installation script
+.git/hooks/
+└── pre-push -> ../../hooks/pre-push  # Symlink (created by installer)
+```
+
 ## Architecture
 
 ### Data Flow

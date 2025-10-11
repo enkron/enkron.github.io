@@ -132,9 +132,7 @@ fn update_junkyard(entry_number: u32, title: &str) -> Result<(), anyhow::Error> 
     let date_str = format!("{day}.{month_roman}.{year}");
 
     // Generate the new entry line
-    let new_entry = format!(
-        "- {date_str}: [{title}](/pub/entries/{entry_number}.html)\n"
-    );
+    let new_entry = format!("- {date_str}: [{title}](/pub/entries/{entry_number}.html)\n");
 
     // Find the "## recent posts" section and insert after it
     let lines: Vec<&str> = junkyard_content.lines().collect();

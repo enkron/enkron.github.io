@@ -87,8 +87,7 @@ fn test_generated_html_structure() {
         .expect("Failed to build site");
 
     // Check index.html
-    let index_content =
-        fs::read_to_string("index.html").expect("Failed to read index.html");
+    let index_content = fs::read_to_string("index.html").expect("Failed to read index.html");
     assert!(index_content.contains("<!DOCTYPE html>"));
     assert!(index_content.contains("<html lang=\"en-US\">"));
     assert!(index_content.contains("enk junkyard"));
@@ -109,20 +108,28 @@ fn test_pdf_generation() {
         .output()
         .expect("Failed to build site");
 
-    // Check PDFs exist and have content
+    // Check PDFs exist
     let cv_pdf = PathBuf::from("download/sbelokon.pdf");
     assert!(cv_pdf.exists(), "CV PDF not generated");
-    let cv_pdf_size = fs::metadata(&cv_pdf)
-        .expect("Failed to read CV PDF metadata")
-        .len();
-    assert!(cv_pdf_size > 0, "CV PDF is empty");
 
     let cover_pdf = PathBuf::from("download/cover.pdf");
     assert!(cover_pdf.exists(), "Cover PDF not generated");
-    let cover_pdf_size = fs::metadata(&cover_pdf)
-        .expect("Failed to read cover PDF metadata")
-        .len();
-    assert!(cover_pdf_size > 0, "Cover PDF is empty");
+
+    // Verify files are readable and have reasonable size (> 100 bytes)
+    // Note: PDF size validation is lenient to account for test environment variations
+    if let Ok(metadata) = fs::metadata(&cv_pdf) {
+        let size = metadata.len();
+        assert!(size > 100, "CV PDF appears invalid (size: {} bytes)", size);
+    }
+
+    if let Ok(metadata) = fs::metadata(&cover_pdf) {
+        let size = metadata.len();
+        assert!(
+            size > 100,
+            "Cover PDF appears invalid (size: {} bytes)",
+            size
+        );
+    }
 }
 
 /// Tests entry HTML files are generated with correct naming.
@@ -156,8 +163,7 @@ fn test_theme_toggle_in_html() {
         .output()
         .expect("Failed to build site");
 
-    let index_content =
-        fs::read_to_string("index.html").expect("Failed to read index.html");
+    let index_content = fs::read_to_string("index.html").expect("Failed to read index.html");
     assert!(index_content.contains("theme-toggle"));
     assert!(index_content.contains("theme-icon"));
     assert!(index_content.contains("/web/pkg/enkronio.js"));
@@ -173,8 +179,7 @@ fn test_css_cache_busting() {
         .output()
         .expect("Failed to build site");
 
-    let index_content =
-        fs::read_to_string("index.html").expect("Failed to read index.html");
+    let index_content = fs::read_to_string("index.html").expect("Failed to read index.html");
     // Check for version query strings on CSS links
     assert!(index_content.contains("/css/main.css?v="));
     assert!(index_content.contains("/web/hack.css?v="));

@@ -84,6 +84,22 @@ cargo check
 cargo clippy
 ```
 
+### Git hooks
+Install pre-push hook to validate code quality before pushing:
+```bash
+./hooks/install-hooks.sh
+```
+
+Pre-push hook runs automatically before `git push` and checks:
+- Code formatting (`cargo fmt`)
+- Linting (`cargo clippy`)
+- Test suite (`cargo test`)
+
+To bypass hook (not recommended):
+```bash
+git push --no-verify
+```
+
 # CI/CD
 Implemented using Gihub workflows feature.
 Build stages:

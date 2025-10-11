@@ -216,14 +216,8 @@ mod tests {
     #[test]
     fn test_theme_preference_from_str_invalid() {
         assert_eq!(ThemePreference::from_str(""), ThemePreference::Auto);
-        assert_eq!(
-            ThemePreference::from_str("invalid"),
-            ThemePreference::Auto
-        );
-        assert_eq!(
-            ThemePreference::from_str("LIGHT"),
-            ThemePreference::Auto
-        );
+        assert_eq!(ThemePreference::from_str("invalid"), ThemePreference::Auto);
+        assert_eq!(ThemePreference::from_str("LIGHT"), ThemePreference::Auto);
     }
 
     /// Tests `ThemePreference::as_str` conversion.

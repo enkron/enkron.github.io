@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+#
+# Pre-push git hook for code quality validation
+#
+# PURPOSE:
+#   Prevents pushing code that fails formatting or linting checks to remote repository.
+#   Runs before git push executes, blocking the push if any validation fails.
+#
+# CHECKS PERFORMED:
+#   1. Rust code formatting (rustfmt) - ensures consistent code style
+#   2. Clippy lints (pedantic mode) - catches common mistakes and anti-patterns
+#   3. All tests execution - verifies functionality before push
+#
+# INSTALLATION:
+#   This hook is stored in version control under hooks/ directory.
+#   To activate, run from repository root:
+#     ./hooks/install-hooks.sh
+#   Or manually symlink:
+#     ln -sf ../../hooks/pre-push .git/hooks/pre-push
+#
+# BYPASS:
+#   To skip hook validation (not recommended), use:
+#     git push --no-verify
+#
+# EXIT CODES:
+#   0 - All checks passed, push proceeds
+#   1 - At least one check failed, push blocked
+#
+# DESIGN RATIONALE:
+#   - Version-controlled: Team shares same validation rules
+#   - Pre-push (not pre-commit): Allows local WIP commits, validates before sharing
+#   - Fast feedback: Catches issues before CI, saving pipeline time
+#   - Symlink approach: Hook updates automatically with git pull
+
+set -e  # Exit on first error
+
+# Color codes for output formatting
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Print colored status message
+print_status() {
+    echo -e "${2}${1}${NC}"
+}
+
+# Print section header
+print_header() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  $1"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+print_header "Git Pre-Push Hook: Code Quality Validation"
+print_status "Running checks before pushing to remote..." "$YELLOW"
+
+# Track if any check fails
+CHECKS_FAILED=0
+
+# ============================================================================
+# CHECK 1: Rust Code Formatting
+# ============================================================================
+print_header "1/3 Checking code formatting (rustfmt)"
+
+if cargo fmt --all -- --check; then
+    print_status "✓ Code formatting check passed" "$GREEN"
+else
+    print_status "✗ Code formatting check failed" "$RED"
+    print_status "  Run 'cargo fmt --all' to fix formatting" "$YELLOW"
+    CHECKS_FAILED=1
+fi
+
+# ============================================================================
+# CHECK 2: Clippy Lints (Pedantic Mode)
+# ============================================================================
+print_header "2/3 Running clippy lints (pedantic mode)"
+
+if cargo clippy --all-targets --all-features -- -D warnings; then
+    print_status "✓ Clippy lints passed" "$GREEN"
+else
+    print_status "✗ Clippy lints failed" "$RED"
+    print_status "  Fix warnings or run 'cargo clippy --fix' for auto-fixes" "$YELLOW"
+    CHECKS_FAILED=1
+fi
+
+# ============================================================================
+# CHECK 3: Test Suite Execution
+# ============================================================================
+print_header "3/3 Running test suite"
+
+if cargo test --all-features; then
+    print_status "✓ All tests passed" "$GREEN"
+else
+    print_status "✗ Tests failed" "$RED"
+    print_status "  Fix failing tests before pushing" "$YELLOW"
+    CHECKS_FAILED=1
+fi
+
+# ============================================================================
+# Final Result
+# ============================================================================
+print_header "Pre-Push Validation Complete"
+
+if [ $CHECKS_FAILED -eq 0 ]; then
+    print_status "✓ All checks passed - proceeding with push" "$GREEN"
+    echo ""
+    exit 0
+else
+    print_status "✗ Some checks failed - push blocked" "$RED"
+    echo ""
+    print_status "Fix the issues above and try again." "$YELLOW"
+    print_status "To bypass this hook (not recommended): git push --no-verify" "$YELLOW"
+    echo ""
+    exit 1
+fi

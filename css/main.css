@@ -234,3 +234,11 @@ nav {
 .entry-nav a:hover {
     text-decoration: underline;
 }
+
+.entry-nav-prev {
+    margin-right: auto;
+}
+
+.entry-nav-next {
+    margin-left: auto;
+}

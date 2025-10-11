@@ -41,8 +41,8 @@ Creates a private blog entry in `in/entries/shadow/N-private-entry.md` that is N
 
 **Shadow entry behavior:**
 - Stored in `in/entries/shadow/` directory (independent numbering from regular entries)
-- Output to `pub/entries/shadow/N.html` during build
-- Accessible via `/priv/entries/N.html` URLs (not `/pub/entries/shadow/`)
+- Output to `priv/entries/N.html` during build (separate from `pub/`)
+- Accessible via `/priv/entries/N.html` URLs
 - Navigation links (Previous/Next) only connect to other shadow entries
 - NOT listed in `junkyard.md` (private by default)
 - Same timestamp and slug generation as regular entries
@@ -184,17 +184,17 @@ hooks/
   - Number portion extracted by splitting on first `-`
   - `add` command auto-generates: scans entries for max N, creates `(N+1)-title-slug.md`
   - Slug generation: lowercase, spaces→dashes, alphanumeric+dashes only, no consecutive dashes
-- Shadow entry files in `in/entries/shadow/`: Numbered format `N-slug.md` → `pub/entries/shadow/N.html`
+- Shadow entry files in `in/entries/shadow/`: Numbered format `N-slug.md` → `priv/entries/N.html`
   - Independent numbering sequence from regular entries
   - Same slug generation rules
-  - URLs use `/priv/entries/N.html` prefix (not `/pub/entries/shadow/`)
+  - Output to `priv/` directory (separate from `pub/`)
   - Navigation links only connect to other shadow entries
 - Other files → `pub/filename.html`
 
 **Entry numbering examples:**
 - `in/entries/1-initial.md` → `pub/entries/1.html` (accessible at `/pub/entries/1.html`)
 - `in/entries/4-setting-up-kubernetes.md` → `pub/entries/4.html` (accessible at `/pub/entries/4.html`)
-- `in/entries/shadow/1-private-notes.md` → `pub/entries/shadow/1.html` (accessible at `/priv/entries/1.html`)
+- `in/entries/shadow/1-private-notes.md` → `priv/entries/1.html` (accessible at `/priv/entries/1.html`)
 - Manual renumbering: possible but requires updating `junkyard.md` links manually for regular entries
 
 ## Dark Mode Feature

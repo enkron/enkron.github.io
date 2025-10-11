@@ -59,7 +59,11 @@ fn main() -> Result<(), anyhow::Error> {
 /// Add a new blog entry
 fn add_entry(title: &str, shadow: bool) -> Result<(), anyhow::Error> {
     // Determine directory based on shadow flag
-    let entries_dir = if shadow { SHADOW_ENTRIES_DIR } else { ENTRIES_DIR };
+    let entries_dir = if shadow {
+        SHADOW_ENTRIES_DIR
+    } else {
+        ENTRIES_DIR
+    };
 
     // Find the next entry number in the appropriate directory
     let next_number = find_next_entry_number(entries_dir)?;
@@ -221,8 +225,16 @@ fn month_to_roman(month: u32) -> &'static str {
 /// Returns HTML with links to previous/next entries if they exist
 /// For shadow entries, uses /priv/entries/ URL prefix and checks shadow directory
 fn generate_entry_navigation(entry_number: u32, is_shadow: bool) -> String {
-    let entries_dir = if is_shadow { SHADOW_ENTRIES_DIR } else { ENTRIES_DIR };
-    let url_prefix = if is_shadow { "/priv/entries/" } else { "/pub/entries/" };
+    let entries_dir = if is_shadow {
+        SHADOW_ENTRIES_DIR
+    } else {
+        ENTRIES_DIR
+    };
+    let url_prefix = if is_shadow {
+        "/priv/entries/"
+    } else {
+        "/pub/entries/"
+    };
 
     let prev_exists = PathBuf::from(entries_dir)
         .join(format!("{}-", entry_number - 1))
@@ -328,7 +340,7 @@ impl Site {
             html.push_str(&Layout::footer());
 
             fs::create_dir_all(PathBuf::from(PUBLIC_DIR).join("entries"))?;
-            fs::create_dir_all(PathBuf::from(PUBLIC_DIR).join("entries/shadow"))?;
+            fs::create_dir_all("priv/entries")?;
 
             let mut htmlfile = if let Some("index.md" | "cv.md") = mdfile.to_str() {
                 PathBuf::from(mdfile)
@@ -337,12 +349,11 @@ impl Site {
                 // Check if this is a shadow entry
                 if mdfile_str.contains("entries/shadow/") {
                     // Extract entry number from filename like "entries/shadow/N-title.md"
+                    // Write to priv/entries/N.html for correct URL routing
                     if let Some(filename) = mdfile.file_name().and_then(|f| f.to_str()) {
                         if let Some(dash_pos) = filename.find('-') {
                             let entry_num = &filename[..dash_pos];
-                            PathBuf::from(PUBLIC_DIR)
-                                .join("entries/shadow")
-                                .join(entry_num)
+                            PathBuf::from("priv/entries").join(entry_num)
                         } else {
                             PathBuf::from(PUBLIC_DIR).join(mdfile)
                         }

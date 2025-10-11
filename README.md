@@ -40,7 +40,7 @@ cargo run --release -- add --shadow "Private Entry"
 
 Shadow entries:
 - Stored in `in/entries/shadow/` (independent numbering)
-- Output to `pub/entries/shadow/N.html`
+- Output to `priv/entries/N.html` (separate from `pub/`)
 - Accessible via `/priv/entries/N.html` URLs
 - Not added to junkyard index
 - Navigation links only to other shadow entries
@@ -70,8 +70,10 @@ in/
 
 pub/
 ├── entries/          Generated entry HTML (1.html, 2.html, ...)
-│   └── shadow/       Generated shadow entry HTML (accessible at /priv/entries/)
 └── junkyard.html     Blog index HTML
+
+priv/
+└── entries/          Generated shadow entry HTML (1.html, 2.html, ...)
 
 download/             Generated PDFs
 ```

@@ -1,4 +1,4 @@
-out_files = pub download index.html cv.html
+out_files = pub priv download index.html cv.html
 
 .PHONY: site
 site:

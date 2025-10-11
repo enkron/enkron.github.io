@@ -204,3 +204,38 @@ nav {
 .theme-toggle:hover {
     background: var(--nav-hover);
 }
+
+.entry-timestamp {
+    color: #a0a0a0;
+    font-weight: bold;
+    font-size: 11px;
+    font-family: Hack, monospace;
+    display: block;
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+
+.entry-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    font-family: Hack, monospace;
+    font-size: 12px;
+}
+
+.entry-nav a {
+    color: var(--link-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.entry-nav a:hover {
+    text-decoration: underline;
+}
+
+.entry-nav-disabled {
+    color: #c0c0c0;
+    font-weight: normal;
+}

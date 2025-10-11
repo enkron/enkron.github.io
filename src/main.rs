@@ -1,5 +1,5 @@
 #![warn(clippy::all, clippy::pedantic)]
-use chrono::Datelike;
+use chrono::{Datelike, Timelike};
 use clap::{Parser, Subcommand};
 use pulldown_cmark::{self, Options, Parser as MdParser};
 use std::{
@@ -113,9 +113,26 @@ fn generate_entry_filename(number: u32, title: &str) -> String {
     format!("{number}-{slug}.md")
 }
 
-/// Create a new entry file with a basic template
+/// Create a new entry file with a basic template including timestamp
 fn create_entry_file(path: &Path, title: &str) -> Result<(), anyhow::Error> {
-    let content = format!("# {title}\n\n");
+    // Generate timestamp in format: DD.ROMAN_MONTH.YYYY HH.MM UTC+OFFSET
+    let now = chrono::Local::now();
+    let day = now.day();
+    let month_roman = month_to_roman(now.month());
+    let year = now.year();
+    let hour = now.hour();
+    let minute = now.minute();
+
+    // Get timezone offset in hours
+    let offset = now.offset().local_minus_utc() / 3600;
+    let offset_sign = if offset >= 0 { "+" } else { "" };
+
+    let timestamp =
+        format!("{day}.{month_roman}.{year} {hour:02}.{minute:02} UTC{offset_sign}{offset}");
+
+    // Wrap timestamp in HTML span with CSS class for styling
+    let content = format!("# {title}\n\n<span class=\"entry-timestamp\">{timestamp}</span>\n\n");
+
     fs::write(path, content)?;
     Ok(())
 }
@@ -186,6 +203,64 @@ fn month_to_roman(month: u32) -> &'static str {
     }
 }
 
+/// Generate navigation HTML for blog entry pagination
+/// Returns HTML with links to previous/next entries if they exist
+fn generate_entry_navigation(entry_number: u32) -> String {
+    let prev_exists = PathBuf::from(ENTRIES_DIR)
+        .join(format!("{}-", entry_number - 1))
+        .parent()
+        .and_then(|parent| {
+            fs::read_dir(parent).ok().and_then(|entries| {
+                entries
+                    .filter_map(Result::ok)
+                    .find(|e| {
+                        e.file_name()
+                            .to_string_lossy()
+                            .starts_with(&format!("{}-", entry_number - 1))
+                    })
+                    .map(|_| true)
+            })
+        })
+        .unwrap_or(false);
+
+    let next_exists = PathBuf::from(ENTRIES_DIR)
+        .join(format!("{}-", entry_number + 1))
+        .parent()
+        .and_then(|parent| {
+            fs::read_dir(parent).ok().and_then(|entries| {
+                entries
+                    .filter_map(Result::ok)
+                    .find(|e| {
+                        e.file_name()
+                            .to_string_lossy()
+                            .starts_with(&format!("{}-", entry_number + 1))
+                    })
+                    .map(|_| true)
+            })
+        })
+        .unwrap_or(false);
+
+    let prev_link = if prev_exists {
+        format!(
+            "  <a href=\"/pub/entries/{}.html\" class=\"entry-nav-prev\">← Previous</a>\n",
+            entry_number - 1
+        )
+    } else {
+        String::from("  <span class=\"entry-nav-disabled\">← Previous</span>\n")
+    };
+
+    let next_link = if next_exists {
+        format!(
+            "  <a href=\"/pub/entries/{}.html\" class=\"entry-nav-next\">Next →</a>\n",
+            entry_number + 1
+        )
+    } else {
+        String::from("  <span class=\"entry-nav-disabled\">Next →</span>\n")
+    };
+
+    format!("<nav class=\"entry-nav\">\n{prev_link}{next_link}</nav>\n\n")
+}
+
 struct Site;
 impl Site {
     fn build() -> Result<(), anyhow::Error> {
@@ -209,6 +284,17 @@ impl Site {
 
             let mut body = String::new();
             pulldown_cmark::html::push_html(&mut body, parser);
+
+            // Add navigation for entry files
+            if let Some(filename) = mdfile.file_name().and_then(|f| f.to_str()) {
+                if let Some(dash_pos) = filename.find('-') {
+                    if let Ok(entry_num) = filename[..dash_pos].parse::<u32>() {
+                        // This is an entry file, prepend navigation
+                        let navigation = generate_entry_navigation(entry_num);
+                        body = navigation + &body;
+                    }
+                }
+            }
 
             let mut html = String::new();
             html.push_str(&Layout::header());

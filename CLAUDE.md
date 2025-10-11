@@ -33,6 +33,33 @@ cargo run --release -- add "Setting up Kubernetes"
 # Updates: in/junkyard.md with "11.X.2025: [Setting up Kubernetes](/pub/entries/4.html)"
 ```
 
+### Add a shadow entry (private, unlisted)
+```bash
+cargo run --release -- add --shadow "Private Entry"
+```
+Creates a private blog entry in `in/entries/shadow/N-private-entry.md` that is NOT added to `junkyard.md`. Shadow entries follow the same numbering and naming rules as regular entries but are kept separate.
+
+**Shadow entry behavior:**
+- Stored in `in/entries/shadow/` directory (independent numbering from regular entries)
+- Output to `pub/entries/shadow/N.html` during build
+- Accessible via `/priv/entries/N.html` URLs (not `/pub/entries/shadow/`)
+- Navigation links (Previous/Next) only connect to other shadow entries
+- NOT listed in `junkyard.md` (private by default)
+- Same timestamp and slug generation as regular entries
+
+**Use cases:**
+- Draft posts before publishing
+- Private notes or documentation
+- Content accessible only via direct URL
+
+**Example:**
+```bash
+cargo run --release -- add --shadow "Private Notes"
+# Creates: in/entries/shadow/1-private-notes.md
+# Skips: junkyard.md update
+# Accessible: https://enkron.org/priv/entries/1.html
+```
+
 ### Build and serve locally
 ```bash
 make site
@@ -109,15 +136,17 @@ hooks/
 - **CLI structure**: Uses `clap` derive API with optional subcommand
   - No args: runs `Site::build()` (default behavior)
   - `add <TITLE>`: runs `add_entry()` to create new blog entry
-- `Site::build()`: Main build pipeline that processes all Markdown files
+  - `add --shadow <TITLE>`: creates private entry in shadow directory
+- `Site::build()`: Main build pipeline that processes all Markdown files, handles shadow entry routing
 - `Site::export()`: PDF generation for specific files
-- `add_entry()`: Creates new entry file and updates junkyard index
-- `find_next_entry_number()`: Scans `in/entries/` for highest N in `N-*.md` pattern
+- `add_entry(title, shadow)`: Creates new entry file, conditionally updates junkyard based on shadow flag
+- `find_next_entry_number(dir)`: Scans specified directory for highest N in `N-*.md` pattern
 - `generate_entry_filename()`: Converts title to slug (lowercase, dashes for spaces/special chars)
-- `create_entry_file()`: Writes `# {title}\n\n` template to new file
+- `create_entry_file()`: Writes entry template with title and timestamp
 - `update_junkyard()`: Inserts new entry link after "## recent posts" header in `junkyard.md`
+- `generate_entry_navigation(entry_num, is_shadow)`: Generates prev/next navigation with appropriate URL prefix
 - `month_to_roman()`: Converts 1-12 to Roman numerals (I-XII) for date formatting
-- Uses constants: `CONTENT_DIR = "in"`, `PUBLIC_DIR = "pub"`, `DOWNLOAD_DIR = "download"`, `ENTRIES_DIR = "in/entries"`, `JUNKYARD_FILE = "in/junkyard.md"`
+- Uses constants: `CONTENT_DIR = "in"`, `PUBLIC_DIR = "pub"`, `DOWNLOAD_DIR = "download"`, `ENTRIES_DIR = "in/entries"`, `SHADOW_ENTRIES_DIR = "in/entries/shadow"`, `JUNKYARD_FILE = "in/junkyard.md"`
 
 **`src/rend.rs`**: HTML layout templates
 - `Layout::header()`: Navigation, meta tags, CSS links with cache-busting hashes, dark mode toggle button
@@ -155,12 +184,18 @@ hooks/
   - Number portion extracted by splitting on first `-`
   - `add` command auto-generates: scans entries for max N, creates `(N+1)-title-slug.md`
   - Slug generation: lowercase, spaces→dashes, alphanumeric+dashes only, no consecutive dashes
+- Shadow entry files in `in/entries/shadow/`: Numbered format `N-slug.md` → `pub/entries/shadow/N.html`
+  - Independent numbering sequence from regular entries
+  - Same slug generation rules
+  - URLs use `/priv/entries/N.html` prefix (not `/pub/entries/shadow/`)
+  - Navigation links only connect to other shadow entries
 - Other files → `pub/filename.html`
 
 **Entry numbering examples:**
-- `in/entries/1-initial.md` → `pub/entries/1.html`
-- `in/entries/4-setting-up-kubernetes.md` → `pub/entries/4.html`
-- Manual renumbering: possible but requires updating `junkyard.md` links manually
+- `in/entries/1-initial.md` → `pub/entries/1.html` (accessible at `/pub/entries/1.html`)
+- `in/entries/4-setting-up-kubernetes.md` → `pub/entries/4.html` (accessible at `/pub/entries/4.html`)
+- `in/entries/shadow/1-private-notes.md` → `pub/entries/shadow/1.html` (accessible at `/priv/entries/1.html`)
+- Manual renumbering: possible but requires updating `junkyard.md` links manually for regular entries
 
 ## Dark Mode Feature
 

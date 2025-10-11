@@ -17,6 +17,7 @@ const CONTENT_DIR: &str = "in";
 const DOWNLOAD_DIR: &str = "download";
 const PUBLIC_DIR: &str = "pub";
 const ENTRIES_DIR: &str = "in/entries";
+const SHADOW_ENTRIES_DIR: &str = "in/entries/shadow";
 const JUNKYARD_FILE: &str = "in/junkyard.md";
 
 #[derive(Parser)]
@@ -33,6 +34,9 @@ enum Commands {
     Add {
         /// Title of the new entry
         title: String,
+        /// Create as shadow entry (private, not listed in junkyard)
+        #[arg(long)]
+        shadow: bool,
     },
 }
 
@@ -40,8 +44,8 @@ fn main() -> Result<(), anyhow::Error> {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Add { title }) => {
-            add_entry(&title)?;
+        Some(Commands::Add { title, shadow }) => {
+            add_entry(&title, shadow)?;
         }
         None => {
             // Default behavior: build the site
@@ -53,29 +57,39 @@ fn main() -> Result<(), anyhow::Error> {
 }
 
 /// Add a new blog entry
-fn add_entry(title: &str) -> Result<(), anyhow::Error> {
-    // Find the next entry number
-    let next_number = find_next_entry_number()?;
+fn add_entry(title: &str, shadow: bool) -> Result<(), anyhow::Error> {
+    // Determine directory based on shadow flag
+    let entries_dir = if shadow { SHADOW_ENTRIES_DIR } else { ENTRIES_DIR };
+
+    // Find the next entry number in the appropriate directory
+    let next_number = find_next_entry_number(entries_dir)?;
 
     // Generate filename from title
     let filename = generate_entry_filename(next_number, title);
 
     // Create the new entry file
-    let entry_path = PathBuf::from(ENTRIES_DIR).join(&filename);
+    let entry_path = PathBuf::from(entries_dir).join(&filename);
     create_entry_file(&entry_path, title)?;
 
-    // Update junkyard.md with the new entry link
-    update_junkyard(next_number, title)?;
-
     println!("Created new entry: {}", entry_path.display());
-    println!("Updated {JUNKYARD_FILE}");
+
+    // Only update junkyard for non-shadow entries
+    if shadow {
+        println!("Shadow entry created (not listed in junkyard)");
+    } else {
+        update_junkyard(next_number, title)?;
+        println!("Updated {JUNKYARD_FILE}");
+    }
 
     Ok(())
 }
 
-/// Find the next entry number by scanning existing entries
-fn find_next_entry_number() -> Result<u32, anyhow::Error> {
-    let entries = fs::read_dir(ENTRIES_DIR)?;
+/// Find the next entry number by scanning existing entries in specified directory
+fn find_next_entry_number(entries_dir: &str) -> Result<u32, anyhow::Error> {
+    // Create directory if it doesn't exist
+    fs::create_dir_all(entries_dir)?;
+
+    let entries = fs::read_dir(entries_dir)?;
     let mut max_number = 0;
 
     for entry in entries {
@@ -205,8 +219,12 @@ fn month_to_roman(month: u32) -> &'static str {
 
 /// Generate navigation HTML for blog entry pagination
 /// Returns HTML with links to previous/next entries if they exist
-fn generate_entry_navigation(entry_number: u32) -> String {
-    let prev_exists = PathBuf::from(ENTRIES_DIR)
+/// For shadow entries, uses /priv/entries/ URL prefix and checks shadow directory
+fn generate_entry_navigation(entry_number: u32, is_shadow: bool) -> String {
+    let entries_dir = if is_shadow { SHADOW_ENTRIES_DIR } else { ENTRIES_DIR };
+    let url_prefix = if is_shadow { "/priv/entries/" } else { "/pub/entries/" };
+
+    let prev_exists = PathBuf::from(entries_dir)
         .join(format!("{}-", entry_number - 1))
         .parent()
         .and_then(|parent| {
@@ -223,7 +241,7 @@ fn generate_entry_navigation(entry_number: u32) -> String {
         })
         .unwrap_or(false);
 
-    let next_exists = PathBuf::from(ENTRIES_DIR)
+    let next_exists = PathBuf::from(entries_dir)
         .join(format!("{}-", entry_number + 1))
         .parent()
         .and_then(|parent| {
@@ -242,7 +260,8 @@ fn generate_entry_navigation(entry_number: u32) -> String {
 
     let prev_link = if prev_exists {
         format!(
-            "  <a href=\"/pub/entries/{}.html\" class=\"entry-nav-prev\">← Previous</a>\n",
+            "  <a href=\"{}{}.html\" class=\"entry-nav-prev\">← Previous</a>\n",
+            url_prefix,
             entry_number - 1
         )
     } else {
@@ -251,7 +270,8 @@ fn generate_entry_navigation(entry_number: u32) -> String {
 
     let next_link = if next_exists {
         format!(
-            "  <a href=\"/pub/entries/{}.html\" class=\"entry-nav-next\">Next →</a>\n",
+            "  <a href=\"{}{}.html\" class=\"entry-nav-next\">Next →</a>\n",
+            url_prefix,
             entry_number + 1
         )
     } else {
@@ -295,7 +315,8 @@ impl Site {
                 if let Some(dash_pos) = filename.find('-') {
                     if let Ok(entry_num) = filename[..dash_pos].parse::<u32>() {
                         // This is an entry file, prepend navigation
-                        let navigation = generate_entry_navigation(entry_num);
+                        let is_shadow = mdfile.to_str().unwrap().contains("entries/shadow/");
+                        let navigation = generate_entry_navigation(entry_num, is_shadow);
                         body = navigation + &body;
                     }
                 }
@@ -307,15 +328,31 @@ impl Site {
             html.push_str(&Layout::footer());
 
             fs::create_dir_all(PathBuf::from(PUBLIC_DIR).join("entries"))?;
+            fs::create_dir_all(PathBuf::from(PUBLIC_DIR).join("entries/shadow"))?;
 
-            let mut htmlfile = match mdfile.to_str() {
-                Some("index.md" | "cv.md") => PathBuf::from(mdfile),
-                _ => {
-                    if let Some(v) = mdfile.to_str().unwrap().split_once('-') {
-                        PathBuf::from(PUBLIC_DIR).join(v.0)
+            let mut htmlfile = if let Some("index.md" | "cv.md") = mdfile.to_str() {
+                PathBuf::from(mdfile)
+            } else {
+                let mdfile_str = mdfile.to_str().unwrap();
+                // Check if this is a shadow entry
+                if mdfile_str.contains("entries/shadow/") {
+                    // Extract entry number from filename like "entries/shadow/N-title.md"
+                    if let Some(filename) = mdfile.file_name().and_then(|f| f.to_str()) {
+                        if let Some(dash_pos) = filename.find('-') {
+                            let entry_num = &filename[..dash_pos];
+                            PathBuf::from(PUBLIC_DIR)
+                                .join("entries/shadow")
+                                .join(entry_num)
+                        } else {
+                            PathBuf::from(PUBLIC_DIR).join(mdfile)
+                        }
                     } else {
                         PathBuf::from(PUBLIC_DIR).join(mdfile)
                     }
+                } else if let Some(v) = mdfile_str.split_once('-') {
+                    PathBuf::from(PUBLIC_DIR).join(v.0)
+                } else {
+                    PathBuf::from(PUBLIC_DIR).join(mdfile)
                 }
             };
 

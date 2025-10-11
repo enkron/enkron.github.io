@@ -32,16 +32,30 @@ cargo run --release -- add "Entry Title"
 
 Entry filename format: `N-entry-title.md` where `N` is auto-incremented.
 
+### Add shadow entry (private)
+Create a private entry that's not listed in `junkyard.md`:
+```bash
+cargo run --release -- add --shadow "Private Entry"
+```
+
+Shadow entries:
+- Stored in `in/entries/shadow/` (independent numbering)
+- Output to `pub/entries/shadow/N.html`
+- Accessible via `/priv/entries/N.html` URLs
+- Not added to junkyard index
+- Navigation links only to other shadow entries
+
 ### CLI reference
 ```bash
 enkronio [COMMAND]
 
 Commands:
-  add <TITLE>    Add a new blog entry
-  help           Print help information
+  add [OPTIONS] <TITLE>    Add a new blog entry
+  help                     Print help information
 
-Options:
-  -h, --help     Print help
+Options for add:
+  --shadow                 Create as shadow entry (private, not listed)
+  -h, --help              Print help
 ```
 
 ## Project structure
@@ -49,12 +63,14 @@ Options:
 ```
 in/
 ├── entries/           Blog entries (numbered: 1-title.md, 2-title.md, ...)
+│   └── shadow/       Private entries (not in junkyard)
 ├── cv.md             CV (→ root/cv.html + download/sbelokon.pdf)
 ├── index.md          Cover page (→ root/index.html + download/cover.pdf)
 └── junkyard.md       Blog index page
 
 pub/
 ├── entries/          Generated entry HTML (1.html, 2.html, ...)
+│   └── shadow/       Generated shadow entry HTML (accessible at /priv/entries/)
 └── junkyard.html     Blog index HTML
 
 download/             Generated PDFs

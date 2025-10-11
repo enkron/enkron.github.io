@@ -12,6 +12,26 @@ A static site generator written in Rust that converts Markdown content to HTML p
 ```bash
 cargo run --release
 ```
+Generates HTML and PDF files from all Markdown sources in `in/`.
+
+### Add a new blog entry
+```bash
+cargo run --release -- add "Entry Title"
+```
+Creates `in/entries/N-entry-title.md` (where N is auto-incremented) and updates `in/junkyard.md` with a new link entry formatted as `DD.MM.YYYY: [Entry Title](/pub/entries/N.html)`. Date uses Roman numerals for month (e.g., `11.X.2025`).
+
+**CLI behavior:**
+- Scans `in/entries/` to find highest existing number
+- Generates filename slug: lowercase, alphanumeric + dashes, no consecutive dashes
+- Creates file with template: `# Entry Title\n\n`
+- Inserts link at top of "## recent posts" section in `junkyard.md`
+
+**Example:**
+```bash
+cargo run --release -- add "Setting up Kubernetes"
+# Creates: in/entries/4-setting-up-kubernetes.md
+# Updates: in/junkyard.md with "11.X.2025: [Setting up Kubernetes](/pub/entries/4.html)"
+```
 
 ### Build and serve locally
 ```bash
@@ -57,10 +77,19 @@ cargo clippy
 
 ### Module Structure
 
-**`src/main.rs`**: Entry point and HTML generation
+**`src/main.rs`**: Entry point, CLI, and HTML generation
+- **CLI structure**: Uses `clap` derive API with optional subcommand
+  - No args: runs `Site::build()` (default behavior)
+  - `add <TITLE>`: runs `add_entry()` to create new blog entry
 - `Site::build()`: Main build pipeline that processes all Markdown files
 - `Site::export()`: PDF generation for specific files
-- Uses constants: `CONTENT_DIR = "in"`, `PUBLIC_DIR = "pub"`, `DOWNLOAD_DIR = "download"`
+- `add_entry()`: Creates new entry file and updates junkyard index
+- `find_next_entry_number()`: Scans `in/entries/` for highest N in `N-*.md` pattern
+- `generate_entry_filename()`: Converts title to slug (lowercase, dashes for spaces/special chars)
+- `create_entry_file()`: Writes `# {title}\n\n` template to new file
+- `update_junkyard()`: Inserts new entry link after "## recent posts" header in `junkyard.md`
+- `month_to_roman()`: Converts 1-12 to Roman numerals (I-XII) for date formatting
+- Uses constants: `CONTENT_DIR = "in"`, `PUBLIC_DIR = "pub"`, `DOWNLOAD_DIR = "download"`, `ENTRIES_DIR = "in/entries"`, `JUNKYARD_FILE = "in/junkyard.md"`
 
 **`src/rend.rs`**: HTML layout templates
 - `Layout::header()`: Navigation, meta tags, CSS links with cache-busting hashes, dark mode toggle button
@@ -84,21 +113,35 @@ cargo clippy
 ### Key Dependencies
 - `pulldown-cmark`: Markdown parsing (both HTML and PDF generation)
 - `walkdir`: Recursive directory traversal
-- `chrono`: Timestamp generation for footer
+- `chrono`: Timestamp generation (footer, blog entry dates) and `Datelike` trait for date components
+- `clap`: CLI argument parsing with derive API for subcommands
 - `once_cell`: Lazy static initialization for CSS hashes
 - `sha2`: SHA256 hashing for cache-busting
 - `anyhow`: Error handling
 - `wasm-bindgen`: Rust-WASM interop for dark mode toggle
-- `web-sys`: Web API bindings for DOM manipulation and localStorage
+- `web-sys`: Web API bindings for DOM manipulation, localStorage, and media queries
 
 ### File Naming Logic
 - `index.md` and `cv.md` → root directory as `index.html` and `cv.html`
-- Date-prefixed files: Split on first `-`, use date portion only (e.g., `2024-01-15-title.md` → `pub/2024-01-15.html`)
+- Entry files in `in/entries/`: Numbered format `N-slug.md` → `pub/entries/N.html`
+  - Number portion extracted by splitting on first `-`
+  - `add` command auto-generates: scans entries for max N, creates `(N+1)-title-slug.md`
+  - Slug generation: lowercase, spaces→dashes, alphanumeric+dashes only, no consecutive dashes
 - Other files → `pub/filename.html`
+
+**Entry numbering examples:**
+- `in/entries/1-initial.md` → `pub/entries/1.html`
+- `in/entries/4-setting-up-kubernetes.md` → `pub/entries/4.html`
+- Manual renumbering: possible but requires updating `junkyard.md` links manually
 
 ## Dark Mode Feature
 
-The site includes a dark mode toggle implemented in WebAssembly:
+The site includes a three-state theme system implemented in WebAssembly:
+
+**Theme States**:
+- **Light** (✸): Force light theme
+- **Dark** (☽): Force dark theme
+- **Auto** (◐): Follow system preference (default)
 
 **CSS Variables** (`css/main.css`):
 - `:root` defines light theme colors
@@ -106,16 +149,27 @@ The site includes a dark mode toggle implemented in WebAssembly:
 - All color values use CSS variables for seamless theme switching
 
 **WASM Module** (`src/lib.rs`):
-- Loads theme preference from browser localStorage
+- `ThemePreference` enum: Light | Dark | Auto
+- Loads preference from `localStorage` key `"theme-preference"` (defaults to Auto)
+- Auto mode: queries `prefers-color-scheme` media feature via `window.matchMedia()`
+- Real-time system theme tracking: event listener on media query updates theme when OS theme changes
+- Toggle button cycles: Light → Dark → Auto → Light
+- Icon updates to reflect current preference (not actual theme)
 - Applies theme on page load (before first paint to prevent flash)
-- Toggle button (☀️/🌙) in navigation switches themes
-- Theme preference persists across sessions
+- Preference persists across sessions
+
+**System Theme Detection**:
+- Uses `MediaQueryList` from `web-sys` to detect OS theme
+- `is_system_dark_mode()`: checks `(prefers-color-scheme: dark)` match status
+- `setup_system_theme_listener()`: registers callback for OS theme changes
+- Only applies system theme when preference is Auto
 
 **Benefits of WASM approach**:
 - Type-safe Rust code compiled to efficient WASM binary (~20KB)
 - No runtime JavaScript parsing overhead
 - Near-native performance
 - Shared codebase with main site generator
+- OS-level theme integration with opt-out capability
 
 ## CI/CD
 
@@ -128,3 +182,4 @@ GitHub Actions workflow (`.github/workflows/build_site.yml`):
 The workflow runs on pushes to `main` and includes three jobs: `build`, `test` (stub), and `deploy`.
 
 **Note**: The CI workflow must install `wasm-pack` and build the WASM module before running the site generator.
+- to memorize

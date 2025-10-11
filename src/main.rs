@@ -254,3 +254,115 @@ impl Site {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Tests `month_to_roman` conversion for all valid months (1-12).
+    /// Verifies correct Roman numeral output for standard calendar months.
+    #[test]
+    fn test_month_to_roman_all_months() {
+        assert_eq!(month_to_roman(1), "I");
+        assert_eq!(month_to_roman(2), "II");
+        assert_eq!(month_to_roman(3), "III");
+        assert_eq!(month_to_roman(4), "IV");
+        assert_eq!(month_to_roman(5), "V");
+        assert_eq!(month_to_roman(6), "VI");
+        assert_eq!(month_to_roman(7), "VII");
+        assert_eq!(month_to_roman(8), "VIII");
+        assert_eq!(month_to_roman(9), "IX");
+        assert_eq!(month_to_roman(10), "X");
+        assert_eq!(month_to_roman(11), "XI");
+        assert_eq!(month_to_roman(12), "XII");
+    }
+
+    /// Tests `month_to_roman` with invalid month values.
+    /// Verifies fallback to "?" for out-of-range inputs.
+    #[test]
+    fn test_month_to_roman_invalid() {
+        assert_eq!(month_to_roman(0), "?");
+        assert_eq!(month_to_roman(13), "?");
+        assert_eq!(month_to_roman(100), "?");
+    }
+
+    /// Tests `generate_entry_filename` with simple alphanumeric title.
+    /// Verifies basic slug generation: lowercase conversion and numbering.
+    #[test]
+    fn test_generate_entry_filename_simple() {
+        let filename = generate_entry_filename(1, "Hello World");
+        assert_eq!(filename, "1-hello-world.md");
+    }
+
+    /// Tests `generate_entry_filename` with special characters.
+    /// Verifies non-alphanumeric characters are filtered out except dashes.
+    #[test]
+    fn test_generate_entry_filename_special_chars() {
+        let filename = generate_entry_filename(5, "Hello, World! How's it going?");
+        assert_eq!(filename, "5-hello-world-hows-it-going.md");
+    }
+
+    /// Tests `generate_entry_filename` with multiple consecutive spaces.
+    /// Verifies consecutive dashes are collapsed into single dash.
+    #[test]
+    fn test_generate_entry_filename_multiple_spaces() {
+        let filename = generate_entry_filename(10, "Multiple   Spaces    Here");
+        assert_eq!(filename, "10-multiple-spaces-here.md");
+    }
+
+    /// Tests `generate_entry_filename` with mixed case and numbers.
+    /// Verifies alphanumeric preservation and case normalization.
+    #[test]
+    fn test_generate_entry_filename_with_numbers() {
+        let filename = generate_entry_filename(42, "IPv6 Setup 2024");
+        assert_eq!(filename, "42-ipv6-setup-2024.md");
+    }
+
+    /// Tests `generate_entry_filename` with leading/trailing spaces.
+    /// Verifies trimming behavior through dash filtering.
+    #[test]
+    fn test_generate_entry_filename_trim() {
+        let filename = generate_entry_filename(3, "  Leading and Trailing  ");
+        assert_eq!(filename, "3-leading-and-trailing.md");
+    }
+
+    /// Tests `generate_entry_filename` with only special characters.
+    /// Verifies edge case handling when all characters are filtered.
+    #[test]
+    fn test_generate_entry_filename_only_special() {
+        let filename = generate_entry_filename(7, "!@#$%^&*()");
+        assert_eq!(filename, "7-.md");
+    }
+
+    /// Tests `generate_entry_filename` with dashes in title.
+    /// Verifies existing dashes are preserved in slug.
+    #[test]
+    fn test_generate_entry_filename_with_dashes() {
+        let filename = generate_entry_filename(8, "Pre-existing-dashes");
+        assert_eq!(filename, "8-pre-existing-dashes.md");
+    }
+
+    /// Tests `generate_entry_filename` with Unicode characters.
+    /// Verifies that Unicode alphanumeric characters are preserved.
+    #[test]
+    fn test_generate_entry_filename_unicode() {
+        let filename = generate_entry_filename(9, "Café münchen");
+        assert_eq!(filename, "9-café-münchen.md");
+    }
+
+    /// Tests `generate_entry_filename` with empty title.
+    /// Verifies handling of edge case with no valid characters.
+    #[test]
+    fn test_generate_entry_filename_empty() {
+        let filename = generate_entry_filename(1, "");
+        assert_eq!(filename, "1-.md");
+    }
+
+    /// Tests `generate_entry_filename` with large entry number.
+    /// Verifies no overflow or formatting issues with large numbers.
+    #[test]
+    fn test_generate_entry_filename_large_number() {
+        let filename = generate_entry_filename(999_999, "Test Entry");
+        assert_eq!(filename, "999999-test-entry.md");
+    }
+}

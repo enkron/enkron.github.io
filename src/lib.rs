@@ -197,3 +197,118 @@ fn init_theme() -> Result<(), JsValue> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Tests `ThemePreference::from_str` for valid theme strings.
+    /// Verifies correct enum variant parsing from string literals.
+    #[test]
+    fn test_theme_preference_from_str_valid() {
+        assert_eq!(ThemePreference::from_str("light"), ThemePreference::Light);
+        assert_eq!(ThemePreference::from_str("dark"), ThemePreference::Dark);
+        assert_eq!(ThemePreference::from_str("auto"), ThemePreference::Auto);
+    }
+
+    /// Tests `ThemePreference::from_str` fallback for invalid strings.
+    /// Verifies default to Auto for unrecognized values.
+    #[test]
+    fn test_theme_preference_from_str_invalid() {
+        assert_eq!(ThemePreference::from_str(""), ThemePreference::Auto);
+        assert_eq!(
+            ThemePreference::from_str("invalid"),
+            ThemePreference::Auto
+        );
+        assert_eq!(
+            ThemePreference::from_str("LIGHT"),
+            ThemePreference::Auto
+        );
+    }
+
+    /// Tests `ThemePreference::as_str` conversion.
+    /// Verifies correct string representation for each theme variant.
+    #[test]
+    fn test_theme_preference_as_str() {
+        assert_eq!(ThemePreference::Light.as_str(), "light");
+        assert_eq!(ThemePreference::Dark.as_str(), "dark");
+        assert_eq!(ThemePreference::Auto.as_str(), "auto");
+    }
+
+    /// Tests bidirectional string conversion.
+    /// Verifies `from_str` and `as_str` are inverse operations for valid inputs.
+    #[test]
+    fn test_theme_preference_round_trip() {
+        let themes = [
+            ThemePreference::Light,
+            ThemePreference::Dark,
+            ThemePreference::Auto,
+        ];
+
+        for theme in themes {
+            let string = theme.as_str();
+            let parsed = ThemePreference::from_str(string);
+            assert_eq!(parsed, theme);
+        }
+    }
+
+    /// Tests `ThemePreference::icon` for all variants.
+    /// Verifies correct icon character for each theme state.
+    #[test]
+    fn test_theme_preference_icon() {
+        assert_eq!(ThemePreference::Light.icon(), "✸");
+        assert_eq!(ThemePreference::Dark.icon(), "☽");
+        assert_eq!(ThemePreference::Auto.icon(), "◐");
+    }
+
+    /// Tests `ThemePreference::next` cycling behavior.
+    /// Verifies Light → Dark → Auto → Light cycle.
+    #[test]
+    fn test_theme_preference_next() {
+        assert_eq!(ThemePreference::Light.next(), ThemePreference::Dark);
+        assert_eq!(ThemePreference::Dark.next(), ThemePreference::Auto);
+        assert_eq!(ThemePreference::Auto.next(), ThemePreference::Light);
+    }
+
+    /// Tests complete theme preference cycle.
+    /// Verifies three `next()` calls return to starting state.
+    #[test]
+    fn test_theme_preference_full_cycle() {
+        let start = ThemePreference::Light;
+        let after_one = start.next();
+        let after_two = after_one.next();
+        let after_three = after_two.next();
+        assert_eq!(after_three, start);
+    }
+
+    /// Tests `ThemePreference` Debug trait implementation.
+    /// Verifies debug formatting produces expected output.
+    #[test]
+    fn test_theme_preference_debug() {
+        assert_eq!(format!("{:?}", ThemePreference::Light), "Light");
+        assert_eq!(format!("{:?}", ThemePreference::Dark), "Dark");
+        assert_eq!(format!("{:?}", ThemePreference::Auto), "Auto");
+    }
+
+    /// Tests `ThemePreference` `PartialEq` implementation.
+    /// Verifies equality comparison works correctly.
+    #[test]
+    fn test_theme_preference_equality() {
+        assert_eq!(ThemePreference::Light, ThemePreference::Light);
+        assert_eq!(ThemePreference::Dark, ThemePreference::Dark);
+        assert_eq!(ThemePreference::Auto, ThemePreference::Auto);
+
+        assert_ne!(ThemePreference::Light, ThemePreference::Dark);
+        assert_ne!(ThemePreference::Dark, ThemePreference::Auto);
+        assert_ne!(ThemePreference::Auto, ThemePreference::Light);
+    }
+
+    /// Tests `ThemePreference` Clone trait implementation.
+    /// Verifies cloning produces equal values.
+    #[test]
+    fn test_theme_preference_clone() {
+        let original = ThemePreference::Light;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+}

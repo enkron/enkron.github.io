@@ -246,7 +246,7 @@ fn generate_entry_navigation(entry_number: u32) -> String {
             entry_number - 1
         )
     } else {
-        String::from("  <span class=\"entry-nav-disabled\">← Previous</span>\n")
+        String::new()
     };
 
     let next_link = if next_exists {
@@ -255,10 +255,15 @@ fn generate_entry_navigation(entry_number: u32) -> String {
             entry_number + 1
         )
     } else {
-        String::from("  <span class=\"entry-nav-disabled\">Next →</span>\n")
+        String::new()
     };
 
-    format!("<nav class=\"entry-nav\">\n{prev_link}{next_link}</nav>\n\n")
+    // Only render nav if at least one link exists
+    if prev_exists || next_exists {
+        format!("<nav class=\"entry-nav\">\n{prev_link}{next_link}</nav>\n\n")
+    } else {
+        String::new()
+    }
 }
 
 struct Site;

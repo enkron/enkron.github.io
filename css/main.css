@@ -218,24 +218,19 @@ nav {
 .entry-nav {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 30px;
-    padding: 10px 0;
+    margin-bottom: 15px;
+    padding: 5px 0;
     border-bottom: 1px solid #e0e0e0;
     font-family: Hack, monospace;
-    font-size: 12px;
+    font-size: 10px;
 }
 
 .entry-nav a {
     color: var(--link-color);
     text-decoration: none;
-    font-weight: bold;
+    font-weight: normal;
 }
 
 .entry-nav a:hover {
     text-decoration: underline;
-}
-
-.entry-nav-disabled {
-    color: #c0c0c0;
-    font-weight: normal;
 }

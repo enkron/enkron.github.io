@@ -314,9 +314,9 @@ fn handle_decrypt(encrypted_b64: &str, passphrase_input: &HtmlInputElement) -> R
                 .ok_or("no decrypted-content")?;
             content_div.set_inner_html(&html);
 
-            // Remove blur from preview with transition
+            // Hide blurred preview IMMEDIATELY (no transition to prevent gibberish flash)
             if let Some(locked_preview) = document.get_element_by_id("locked-preview") {
-                locked_preview.set_class_name("locked-preview");
+                locked_preview.set_class_name("hidden");
             }
 
             // Hide unlock overlay with fade
@@ -324,22 +324,7 @@ fn handle_decrypt(encrypted_b64: &str, passphrase_input: &HtmlInputElement) -> R
                 unlock_overlay.set_class_name("unlock-overlay hidden");
             }
 
-            // Hide blurred preview after transition (500ms)
-            if let Some(locked_preview) = document.get_element_by_id("locked-preview") {
-                let preview_clone = locked_preview.clone();
-                let closure = Closure::once(Box::new(move || {
-                    preview_clone.set_class_name("hidden");
-                }) as Box<dyn FnOnce()>);
-
-                window
-                    .set_timeout_with_callback_and_timeout_and_arguments_0(
-                        closure.as_ref().unchecked_ref(),
-                        500,
-                    )?;
-                closure.forget();
-            }
-
-            // Show decrypted content
+            // Show decrypted content (no delay)
             content_div.set_class_name("decrypted-content");
 
             // Clear passphrase input (security)

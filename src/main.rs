@@ -529,7 +529,7 @@ fn generate_locked_stub_from_encrypted(encrypted_b64: &str) -> String {
   <!-- Centered unlock overlay -->
   <div id="unlock-overlay" class="unlock-overlay">
     <div class="unlock-form">
-      <span class="lock-icon">🔒</span>
+      <img src="/favicon/favicon-32x32.png" alt="Lock" class="lock-icon-img"/>
       <h2>Locked Entry</h2>
       <p>Enter passphrase to decrypt</p>
 

@@ -344,6 +344,13 @@ nav {
     line-height: 1;
 }
 
+.lock-icon-img {
+    width: 48px;
+    height: 48px;
+    display: block;
+    margin: 0 auto 1rem auto;
+}
+
 .unlock-form h2 {
     margin: 0.5rem 0;
     font-size: 16px;

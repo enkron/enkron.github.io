@@ -60,6 +60,88 @@ cargo run --release -- add --shadow "Private Notes"
 # Accessible: https://enkron.org/priv/entries/1.html
 ```
 
+### Encrypt a blog entry (password-protected)
+```bash
+# Step 1: Create entry normally
+cargo run --release -- add "Encrypted Entry"
+
+# Step 2: Encrypt the entry file
+cargo run --release -- lock in/entries/N-encrypted-entry.md
+```
+Encrypts an existing markdown file using AES-256-GCM and stores it as `.enc` file in the repository. The original `.md` file is removed after encryption.
+
+**Encryption behavior:**
+- Uses AES-256-GCM authenticated encryption (NIST-approved, tamper-proof)
+- Key derivation with Argon2id (memory-hard, GPU/ASIC resistant)
+- Random salt and nonce per encryption (semantic security)
+- Source file transformed: `.md` → `.enc` (encrypted on disk)
+- Generates locked HTML stub with embedded encrypted content during build
+- Decryption happens client-side in browser (no server needed)
+
+**Security properties:**
+- Argon2id parameters: 64MB memory, 3 iterations, 4 threads (OWASP 2024)
+- Authentication tag prevents tampering with encrypted content
+- Passphrase never stored in browser localStorage (re-enter per session)
+- NOT compatible with `gpg` command-line tool (uses RustCrypto instead)
+
+**Passphrase management:**
+- Environment variable: `export ENKRONIO_LOCK_KEY="your-passphrase"`
+- Interactive prompt: Will prompt securely if env var not set
+- CLI flag NOT supported (insecure, visible in process list)
+- Same passphrase used for all locked entries (global passphrase model)
+
+**Example:**
+```bash
+# Set passphrase via environment variable
+export ENKRONIO_LOCK_KEY="my-secure-passphrase-16-chars"
+
+# Create and encrypt a regular entry
+cargo run --release -- add "Private Research"
+cargo run --release -- lock in/entries/7-private-research.md
+# Creates: in/entries/7-private-research.enc (encrypted source)
+# Accessible: https://enkron.org/pub/entries/7.html (shows lock UI)
+# Listed in junkyard.md (title visible, content encrypted)
+
+# Create and encrypt a shadow entry (double privacy: unlisted + encrypted)
+cargo run --release -- add --shadow "Secret Notes"
+cargo run --release -- lock in/entries/shadow/1-secret-notes.md
+# Creates: in/entries/shadow/1-secret-notes.enc (encrypted source)
+# Accessible: https://enkron.org/priv/entries/1.html (shows lock UI)
+# NOT listed in junkyard.md
+```
+
+**Building site with locked entries:**
+```bash
+# No passphrase needed! Build works directly with .enc files
+cargo run --release
+# .enc files stay encrypted, embedded as-is in HTML stubs
+# Browser WASM module handles decryption when user enters passphrase
+```
+
+**Unlocking (decrypting) entries locally:**
+```bash
+# Decrypt entry (.enc -> .md)
+cargo run --release -- lock --unlock in/entries/5-title.enc
+# Creates: in/entries/5-title.md (removes .enc file)
+
+# Decrypt shadow entry
+cargo run --release -- lock --unlock in/entries/shadow/2-title.enc
+# Creates: in/entries/shadow/2-title.md (removes .enc file)
+```
+
+**Lockfile tracking:**
+- File: `.enkronio-locks` (JSON format, gitignored)
+- Tracks which entries are encrypted (number, shadow flag, timestamp)
+- Used by build system to identify locked entries
+- DO NOT commit to repository (contains metadata about encrypted entries)
+
+**Important notes:**
+- Encrypted source files (`.enc`) ARE committed to repository
+- Use strong passphrases (16+ characters recommended)
+- **No passphrase needed to build site** - encrypted files embedded as-is
+- Browser-side decryption: users enter passphrase in web UI to view content
+- Lost passphrase = permanently encrypted content (no recovery)
+
 ### Build and serve locally
 ```bash
 make site
@@ -137,16 +219,22 @@ hooks/
   - No args: runs `Site::build()` (default behavior)
   - `add <TITLE>`: runs `add_entry()` to create new blog entry
   - `add --shadow <TITLE>`: creates private entry in shadow directory
-- `Site::build()`: Main build pipeline that processes all Markdown files, handles shadow entry routing
+  - `lock <PATH>`: encrypts existing markdown file (.md → .enc)
+  - `lock --unlock <PATH>`: decrypts encrypted file (.enc → .md)
+- `Site::build()`: Main build pipeline that processes all Markdown files (.md and .enc only), handles shadow entry routing, embeds encrypted entries as-is (no decryption needed)
 - `Site::export()`: PDF generation for specific files
-- `add_entry(title, shadow)`: Creates new entry file, conditionally updates junkyard based on shadow flag
-- `find_next_entry_number(dir)`: Scans specified directory for highest N in `N-*.md` pattern
+- `add_entry(title, shadow)`: Creates new entry file with template, conditionally updates junkyard based on shadow flag
+- `lock_file(path, unlock)`: Encrypts (.md → .enc) or decrypts (.enc → .md) existing file, removes original
+- `get_passphrase(prompt_message)`: Gets passphrase from ENKRONIO_LOCK_KEY env var or secure interactive prompt
+- `generate_locked_stub_from_encrypted(encrypted_b64)`: Creates locked HTML interface with embedded encrypted content for browser decryption (no passphrase needed at build time)
+- `find_next_entry_number(dir)`: Scans specified directory for highest N in `N-*.md` or `N-*.enc` pattern
 - `generate_entry_filename()`: Converts title to slug (lowercase, dashes for spaces/special chars)
 - `create_entry_file()`: Writes entry template with title and timestamp
 - `update_junkyard()`: Inserts new entry link after "## recent posts" header in `junkyard.md`
 - `generate_entry_navigation(entry_num, is_shadow)`: Generates prev/next navigation with appropriate URL prefix
 - `month_to_roman()`: Converts 1-12 to Roman numerals (I-XII) for date formatting
-- Uses constants: `CONTENT_DIR = "in"`, `PUBLIC_DIR = "pub"`, `DOWNLOAD_DIR = "download"`, `ENTRIES_DIR = "in/entries"`, `SHADOW_ENTRIES_DIR = "in/entries/shadow"`, `JUNKYARD_FILE = "in/junkyard.md"`
+- `track_locked_entry()`, `read_lockfile()`, `write_lockfile()`, `is_entry_locked()`: Lockfile management for tracking encrypted entries
+- Uses constants: `CONTENT_DIR = "in"`, `PUBLIC_DIR = "pub"`, `DOWNLOAD_DIR = "download"`, `ENTRIES_DIR = "in/entries"`, `SHADOW_ENTRIES_DIR = "in/entries/shadow"`, `JUNKYARD_FILE = "in/junkyard.md"`, `LOCK_KEY_ENV = "ENKRONIO_LOCK_KEY"`, `LOCKFILE_PATH = ".enkronio-locks"`
 
 **`src/rend.rs`**: HTML layout templates
 - `Layout::header()`: Navigation, meta tags, CSS links with cache-busting hashes, dark mode toggle button
@@ -154,11 +242,25 @@ hooks/
 - `Layout::footer()`: Build metadata (GitHub Actions env vars: `GITHUB_RUN_NUMBER`, `GITHUB_SHA`), timestamp, and WASM module loader
 - CSS cache-busting: Computes SHA256 hashes of `css/main.css` and `web/hack.css` at compile time using `once_cell::Lazy` and embeds them as query strings
 
-**`src/lib.rs`**: WASM module for dark mode functionality
-- `main()`: Initializes theme from localStorage on page load
+**`src/lib.rs`**: WASM module for dark mode and browser-side decryption
+- `main()`: Initializes theme and locked entry UI on page load
 - `toggle_theme()`: Switches between light and dark themes
 - `init_theme()`: Sets up theme state and event listeners for toggle button
+- `init_locked_entry()`: Sets up decryption UI if page has locked entry
+- `handle_decrypt()`: Handles decrypt button click, validates passphrase, decrypts content
+- `decrypt_content()`: AES-256-GCM + Argon2id decryption (matches src/crypto.rs)
+- `markdown_to_html()`: Simple markdown parser for decrypted content
+- `process_inline_html()`: Allows safe HTML tags (span, strong, em, code) while escaping others
 - Compiled to WebAssembly and loaded as ES6 module in footer
+
+**`src/crypto.rs`**: Encryption/decryption module for locked entries
+- `encrypt(plaintext, passphrase)`: Encrypts content with AES-256-GCM + Argon2id
+- `decrypt(ciphertext, passphrase)`: Decrypts and verifies authenticated encryption
+- `to_base64(bytes)`: Encodes encrypted data for HTML embedding
+- `from_base64(encoded)`: Decodes base64 data for decryption
+- Uses RustCrypto ecosystem (NOT GPG-compatible)
+- Format: `salt|nonce|ciphertext+auth_tag` (delimited for parsing)
+- Security: Argon2id (64MB, 3 iter, 4 threads), AES-256-GCM with random nonce
 
 **`src/pdf.rs`**: Custom PDF renderer (replaces `wkhtmltopdf`)
 - `render()`: Main entry point that converts Markdown to PDF bytes

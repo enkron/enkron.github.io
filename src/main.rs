@@ -10,6 +10,7 @@ use walkdir::WalkDir;
 
 mod rend;
 use rend::Layout;
+mod crypto;
 mod pdf;
 mod work_period;
 
@@ -19,6 +20,8 @@ const PUBLIC_DIR: &str = "pub";
 const ENTRIES_DIR: &str = "in/entries";
 const SHADOW_ENTRIES_DIR: &str = "in/entries/shadow";
 const JUNKYARD_FILE: &str = "in/junkyard.md";
+const LOCK_KEY_ENV: &str = "ENKRONIO_LOCK_KEY";
+const LOCKFILE_PATH: &str = ".enkronio-locks";
 
 #[derive(Parser)]
 #[command(name = "enkronio")]
@@ -38,6 +41,14 @@ enum Commands {
         #[arg(long)]
         shadow: bool,
     },
+    /// Lock (encrypt) or unlock (decrypt) a markdown file
+    Lock {
+        /// Path to the markdown file to encrypt/decrypt
+        path: String,
+        /// Decrypt the file instead of encrypting it
+        #[arg(short, long)]
+        unlock: bool,
+    },
 }
 
 fn main() -> Result<(), anyhow::Error> {
@@ -47,9 +58,129 @@ fn main() -> Result<(), anyhow::Error> {
         Some(Commands::Add { title, shadow }) => {
             add_entry(&title, shadow)?;
         }
+        Some(Commands::Lock { path, unlock }) => {
+            lock_file(&path, unlock)?;
+        }
         None => {
             // Default behavior: build the site
             Site::build()?;
+        }
+    }
+
+    Ok(())
+}
+
+/// Get encryption passphrase from environment variable or interactive prompt.
+///
+/// Security priorities:
+/// 1. Environment variable `ENKRONIO_LOCK_KEY` (for CI/CD and scripting)
+/// 2. Interactive secure prompt (for manual operations, no echo)
+///
+/// CLI flags are NOT supported for security reasons (visible in process list).
+fn get_passphrase(prompt_message: &str) -> Result<String, anyhow::Error> {
+    // Try environment variable first
+    if let Ok(passphrase) = std::env::var(LOCK_KEY_ENV) {
+        if !passphrase.is_empty() {
+            return Ok(passphrase);
+        }
+    }
+
+    // Fall back to interactive prompt (secure input, no terminal echo)
+    println!("{prompt_message}");
+    let passphrase = rpassword::prompt_password("Passphrase: ")?;
+
+    if passphrase.is_empty() {
+        return Err(anyhow::anyhow!("Passphrase cannot be empty"));
+    }
+
+    // Optional: passphrase strength validation
+    if passphrase.len() < 12 {
+        eprintln!("Warning: Passphrase is shorter than recommended minimum (12 characters)");
+        eprintln!("For better security, use a longer passphrase (16+ characters recommended)");
+    }
+
+    Ok(passphrase)
+}
+
+/// Lock (encrypt) or unlock (decrypt) a markdown file.
+///
+/// When encrypting: reads .md file, encrypts it, saves as .enc, removes .md
+/// When decrypting: reads .enc file, decrypts it, saves as .md, removes .enc
+fn lock_file(path: &str, unlock: bool) -> Result<(), anyhow::Error> {
+    let file_path = PathBuf::from(path);
+
+    if !file_path.exists() {
+        return Err(anyhow::anyhow!("File not found: {}", path));
+    }
+
+    if unlock {
+        // Decrypt: .enc -> .md
+        if !path.to_lowercase().ends_with(".enc") {
+            return Err(anyhow::anyhow!("Unlock requires .enc file, got: {}", path));
+        }
+
+        eprintln!("Unlocking: {path}");
+
+        // Read encrypted content
+        let encrypted_bytes = fs::read(&file_path)?;
+
+        // Get passphrase
+        let passphrase = get_passphrase("Enter passphrase to decrypt file:")?;
+
+        // Decrypt
+        let plaintext = crypto::decrypt(&encrypted_bytes, &passphrase)?;
+
+        // Write decrypted content (.enc -> .md)
+        let output_path = file_path.with_extension("md");
+        fs::write(&output_path, plaintext)?;
+
+        // Remove encrypted file
+        fs::remove_file(&file_path)?;
+
+        println!("Unlocked: {} -> {}", path, output_path.display());
+        println!("File decrypted successfully!");
+    } else {
+        // Encrypt: .md -> .enc
+        if !path.to_lowercase().ends_with(".md") {
+            return Err(anyhow::anyhow!("Lock requires .md file, got: {}", path));
+        }
+
+        eprintln!("Locking: {path}");
+
+        // Read plaintext content
+        let plaintext = fs::read_to_string(&file_path)?;
+
+        // Get passphrase
+        let passphrase = get_passphrase("Enter passphrase to encrypt file:")?;
+
+        // Encrypt
+        let encrypted_bytes = crypto::encrypt(&plaintext, &passphrase)?;
+
+        // Write encrypted content (.md -> .enc)
+        let mut output_path = file_path.clone();
+        output_path.set_extension("enc");
+        fs::write(&output_path, encrypted_bytes)?;
+
+        // Remove plaintext file
+        fs::remove_file(&file_path)?;
+
+        println!("Locked: {} -> {}", path, output_path.display());
+        println!("File encrypted successfully!");
+
+        // Track in lockfile if it's an entry
+        if path.contains("/entries/") {
+            let is_shadow = path.contains("/entries/shadow/");
+            // Try to extract entry number
+            if let Some(filename) = file_path.file_name() {
+                if let Some(filename_str) = filename.to_str() {
+                    if let Some(dash_pos) = filename_str.find('-') {
+                        if let Ok(entry_num) = filename_str[..dash_pos].parse::<u32>() {
+                            track_locked_entry(entry_num, is_shadow)?;
+                            eprintln!("Tracked in lockfile: entry {entry_num}");
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -70,22 +201,88 @@ fn add_entry(title: &str, shadow: bool) -> Result<(), anyhow::Error> {
 
     // Generate filename from title
     let filename = generate_entry_filename(next_number, title);
-
-    // Create the new entry file
     let entry_path = PathBuf::from(entries_dir).join(&filename);
+
+    // Create the entry file with template content
     create_entry_file(&entry_path, title)?;
 
     println!("Created new entry: {}", entry_path.display());
 
-    // Only update junkyard for non-shadow entries
+    // Update junkyard for non-shadow entries
     if shadow {
-        println!("Shadow entry created (not listed in junkyard)");
+        println!("Shadow entry created (private, not listed in junkyard)");
+        println!("To encrypt: cargo run -- lock {}", entry_path.display());
     } else {
         update_junkyard(next_number, title)?;
         println!("Updated {JUNKYARD_FILE}");
+        println!("To encrypt: cargo run -- lock {}", entry_path.display());
     }
 
     Ok(())
+}
+
+/// Lockfile format for tracking encrypted entries
+#[derive(serde::Serialize, serde::Deserialize, Default)]
+struct Lockfile {
+    version: String,
+    locked_entries: Vec<LockedEntry>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct LockedEntry {
+    number: u32,
+    shadow: bool,
+    created: String,
+}
+
+/// Read the lockfile (.enkronio-locks) or return empty default
+fn read_lockfile() -> Result<Lockfile, anyhow::Error> {
+    if !Path::new(LOCKFILE_PATH).exists() {
+        return Ok(Lockfile {
+            version: "1.0".to_string(),
+            locked_entries: vec![],
+        });
+    }
+
+    let content = fs::read_to_string(LOCKFILE_PATH)?;
+    let lockfile: Lockfile = serde_json::from_str(&content)?;
+    Ok(lockfile)
+}
+
+/// Write the lockfile (.enkronio-locks)
+fn write_lockfile(lockfile: &Lockfile) -> Result<(), anyhow::Error> {
+    let content = serde_json::to_string_pretty(lockfile)?;
+    fs::write(LOCKFILE_PATH, content)?;
+    Ok(())
+}
+
+/// Track a locked entry in the lockfile
+fn track_locked_entry(entry_number: u32, shadow: bool) -> Result<(), anyhow::Error> {
+    let mut lockfile = read_lockfile()?;
+
+    // Add new locked entry
+    lockfile.locked_entries.push(LockedEntry {
+        number: entry_number,
+        shadow,
+        created: chrono::Utc::now().to_rfc3339(),
+    });
+
+    write_lockfile(&lockfile)?;
+    Ok(())
+}
+
+/// Check if an entry is locked
+#[allow(dead_code)] // Reserved for future navigation features
+fn is_entry_locked(entry_number: u32, shadow: bool) -> bool {
+    let lockfile = read_lockfile().ok();
+    if let Some(lockfile) = lockfile {
+        lockfile
+            .locked_entries
+            .iter()
+            .any(|e| e.number == entry_number && e.shadow == shadow)
+    } else {
+        false
+    }
 }
 
 /// Find the next entry number by scanning existing entries in specified directory
@@ -101,7 +298,7 @@ fn find_next_entry_number(entries_dir: &str) -> Result<u32, anyhow::Error> {
         let filename = entry.file_name();
         let filename_str = filename.to_string_lossy();
 
-        // Parse number from filename like "3-ipv6-local-networking.md"
+        // Parse number from filename like "3-ipv6-local-networking.md" or "5-title.enc"
         if let Some(dash_pos) = filename_str.find('-') {
             if let Ok(num) = filename_str[..dash_pos].parse::<u32>() {
                 max_number = max_number.max(num);
@@ -298,10 +495,52 @@ fn generate_entry_navigation(entry_number: u32, is_shadow: bool) -> String {
     }
 }
 
+/// Generate a locked HTML stub with embedded encrypted content for browser decryption.
+///
+/// This function creates the "🔒 Locked Entry" interface that users see before decryption.
+/// The encrypted markdown is embedded as base64 in a data attribute for WASM decryption.
+///
+/// This version directly embeds already-encrypted bytes without requiring the passphrase.
+/// The browser WASM module will handle decryption when the user enters their passphrase.
+fn generate_locked_stub_from_encrypted(encrypted_b64: &str) -> String {
+    // Generate the locked stub HTML
+    let stub = format!(
+        r#"
+<div id="locked-entry-container" class="locked-entry" data-encrypted="{encrypted_b64}">
+  <div id="lock-banner" class="lock-banner">
+    <span class="lock-icon">🔒</span>
+    <h2>This entry is encrypted</h2>
+    <p>Enter the passphrase to decrypt and view the content.</p>
+  </div>
+
+  <div id="unlock-interface" class="unlock-interface">
+    <input type="password"
+           id="passphrase-input"
+           placeholder="Enter passphrase"
+           autocomplete="off"
+           aria-label="Passphrase"
+           class="passphrase-input">
+    <button id="decrypt-button" class="decrypt-button">🔓 Unlock</button>
+
+    <div id="error-message" class="error-message hidden" role="alert"></div>
+    <div id="decrypt-status" class="decrypt-status hidden" aria-live="polite">
+      Decrypting... (this may take a few seconds)
+    </div>
+  </div>
+
+  <div id="decrypted-content" class="decrypted-content hidden"></div>
+</div>
+"#,
+    );
+
+    stub
+}
+
 struct Site;
 impl Site {
     fn build() -> Result<(), anyhow::Error> {
-        let mdfiles = WalkDir::new(CONTENT_DIR)
+        // Collect all files from content directory (.md and .enc only)
+        let all_files = WalkDir::new(CONTENT_DIR)
             .min_depth(1)
             .into_iter()
             .filter(|e| e.as_ref().unwrap().clone().into_path().is_file())
@@ -312,63 +551,118 @@ impl Site {
                     .unwrap()
                     .to_owned()
             })
+            .filter(|path| {
+                // Only process .md and .enc files
+                path.extension()
+                    .and_then(|ext| ext.to_str())
+                    .is_some_and(|ext| {
+                        ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("enc")
+                    })
+            })
             .collect::<Vec<_>>();
 
-        for mdfile in &mdfiles {
-            let md = fs::read_to_string(PathBuf::from(CONTENT_DIR).join(mdfile))?;
+        fs::create_dir_all(PathBuf::from(PUBLIC_DIR).join("entries"))?;
+        fs::create_dir_all("priv/entries")?;
+
+        for mdfile in &all_files {
+            let file_path = PathBuf::from(CONTENT_DIR).join(mdfile);
+            let filename = mdfile.to_str().unwrap();
+
+            // Check if this is an encrypted file (.enc)
+            let is_locked = mdfile
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("enc"));
+
+            // For locked entries, we keep them encrypted and generate a stub
+            // For regular entries, we process markdown normally
+            let encrypted_bytes = if is_locked {
+                Some(fs::read(&file_path)?)
+            } else {
+                None
+            };
+
+            // Read markdown content (skip for locked entries, will generate stub)
+            let md = if is_locked {
+                String::new() // Placeholder, we'll use encrypted_bytes directly
+            } else {
+                fs::read_to_string(&file_path)?
+            };
+
             let md = work_period::process(&md);
-            let parser = MdParser::new_ext(&md, Options::all());
 
-            let mut body = String::new();
-            pulldown_cmark::html::push_html(&mut body, parser);
+            // Determine if this is a shadow entry
+            let is_shadow = filename.contains("entries/shadow/");
 
-            // Add navigation for entry files
-            if let Some(filename) = mdfile.file_name().and_then(|f| f.to_str()) {
-                if let Some(dash_pos) = filename.find('-') {
-                    if let Ok(entry_num) = filename[..dash_pos].parse::<u32>() {
-                        // This is an entry file, prepend navigation
-                        let is_shadow = mdfile.to_str().unwrap().contains("entries/shadow/");
-                        let navigation = generate_entry_navigation(entry_num, is_shadow);
-                        body = navigation + &body;
-                    }
+            // Extract entry number if this is an entry file
+            let entry_num: Option<u32> =
+                mdfile
+                    .file_name()
+                    .and_then(|f| f.to_str())
+                    .and_then(|fname| {
+                        // Remove .enc extension if present for parsing
+                        let fname_clean = fname.strip_suffix(".enc").unwrap_or(fname);
+                        fname_clean
+                            .find('-')
+                            .and_then(|dash_pos| fname_clean[..dash_pos].parse::<u32>().ok())
+                    });
+
+            // Generate HTML body
+            let body = if is_locked {
+                // For locked entries: generate stub with embedded encrypted bytes (no decryption needed!)
+                let encrypted_b64 = crypto::to_base64(encrypted_bytes.as_ref().unwrap());
+                generate_locked_stub_from_encrypted(&encrypted_b64)
+            } else {
+                // For regular entries: normal markdown to HTML
+                let parser = MdParser::new_ext(&md, Options::all());
+                let mut body = String::new();
+                pulldown_cmark::html::push_html(&mut body, parser);
+
+                // Add navigation for entry files
+                if let Some(entry_num) = entry_num {
+                    let navigation = generate_entry_navigation(entry_num, is_shadow);
+                    body = navigation + &body;
                 }
-            }
 
+                body
+            };
+
+            // Wrap in layout
             let mut html = String::new();
             html.push_str(&Layout::header());
             html.push_str(Layout::body(&body).as_str());
             html.push_str(&Layout::footer());
 
-            fs::create_dir_all(PathBuf::from(PUBLIC_DIR).join("entries"))?;
-            fs::create_dir_all("priv/entries")?;
-
+            // Determine output file path
             let mut htmlfile = if let Some("index.md" | "cv.md") = mdfile.to_str() {
                 PathBuf::from(mdfile)
             } else {
                 let mdfile_str = mdfile.to_str().unwrap();
-                // Check if this is a shadow entry
-                if mdfile_str.contains("entries/shadow/") {
-                    // Extract entry number from filename like "entries/shadow/N-title.md"
-                    // Write to priv/entries/N.html for correct URL routing
-                    if let Some(filename) = mdfile.file_name().and_then(|f| f.to_str()) {
-                        if let Some(dash_pos) = filename.find('-') {
-                            let entry_num = &filename[..dash_pos];
-                            PathBuf::from("priv/entries").join(entry_num)
-                        } else {
-                            PathBuf::from(PUBLIC_DIR).join(mdfile)
-                        }
+                // Remove .enc extension for path calculation
+                let mdfile_clean = mdfile_str.strip_suffix(".enc").unwrap_or(mdfile_str);
+
+                if mdfile_clean.contains("entries/shadow/") {
+                    // Shadow entry: write to priv/entries/N.html
+                    if let Some(entry_num) = entry_num {
+                        PathBuf::from("priv/entries").join(entry_num.to_string())
                     } else {
-                        PathBuf::from(PUBLIC_DIR).join(mdfile)
+                        PathBuf::from("priv").join(mdfile)
                     }
-                } else if let Some(v) = mdfile_str.split_once('-') {
+                } else if let Some(v) = mdfile_clean.split_once('-') {
+                    // Regular numbered entry: write to pub/entries/N.html
                     PathBuf::from(PUBLIC_DIR).join(v.0)
                 } else {
+                    // Other files: write to pub/
                     PathBuf::from(PUBLIC_DIR).join(mdfile)
                 }
             };
 
             htmlfile.set_extension("html");
             fs::write(&htmlfile, html)?;
+
+            if is_locked {
+                eprintln!("Generated locked HTML: {}", htmlfile.display());
+            }
         }
 
         fs::create_dir_all(DOWNLOAD_DIR)?;

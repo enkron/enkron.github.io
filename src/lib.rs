@@ -1,6 +1,17 @@
 #![warn(clippy::all, clippy::pedantic)]
 use wasm_bindgen::prelude::*;
-use web_sys::{window, HtmlElement, MediaQueryList};
+use web_sys::{window, Event, HtmlElement, HtmlInputElement, MediaQueryList};
+
+// Import crypto module for browser-side decryption
+use aes_gcm::{
+    aead::{Aead, KeyInit},
+    Aes256Gcm, Nonce,
+};
+use argon2::{
+    password_hash::{PasswordHasher, SaltString},
+    Argon2, ParamsBuilder, Version,
+};
+use base64::prelude::*;
 
 /// Theme preference options: light, dark, or auto (follow system)
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -53,6 +64,10 @@ impl ThemePreference {
 pub fn main() -> Result<(), JsValue> {
     // Initialize theme on page load
     init_theme()?;
+
+    // Initialize locked entry decryption UI (if present)
+    init_locked_entry()?;
+
     Ok(())
 }
 
@@ -196,6 +211,339 @@ fn init_theme() -> Result<(), JsValue> {
     closure.forget();
 
     Ok(())
+}
+
+// ============================================================================
+// Locked Entry Decryption (Browser-side)
+// ============================================================================
+
+// Argon2id parameters (must match src/crypto.rs)
+const ARGON2_MEMORY: u32 = 65536; // 64 MB
+const ARGON2_TIME: u32 = 3; // iterations
+const ARGON2_PARALLELISM: u32 = 4; // threads
+
+/// Initialize locked entry UI if present on the page
+///
+/// # Errors
+/// Returns an error if DOM elements cannot be accessed (ignored if no locked entry)
+fn init_locked_entry() -> Result<(), JsValue> {
+    let window = window().ok_or("no window")?;
+    let document = window.document().ok_or("no document")?;
+
+    // Check if this page has a locked entry
+    let Some(locked_entry) = document.get_element_by_id("locked-entry-container") else {
+        return Ok(()); // No locked entry on this page
+    };
+
+    let passphrase_input = document
+        .get_element_by_id("passphrase-input")
+        .ok_or("no passphrase-input")?
+        .dyn_into::<HtmlInputElement>()?;
+
+    let decrypt_button = document
+        .get_element_by_id("decrypt-button")
+        .ok_or("no decrypt-button")?
+        .dyn_into::<HtmlElement>()?;
+
+    // Get encrypted data from data attribute
+    let encrypted_b64 = locked_entry
+        .get_attribute("data-encrypted")
+        .ok_or("no data-encrypted attribute")?;
+
+    // Clone for closure
+    let encrypted_b64_clone = encrypted_b64.clone();
+    let passphrase_input_clone = passphrase_input.clone();
+
+    // Decrypt button click handler
+    let decrypt_closure = Closure::wrap(Box::new(move |_event: Event| {
+        let _ = handle_decrypt(&encrypted_b64_clone, &passphrase_input_clone);
+    }) as Box<dyn FnMut(Event)>);
+
+    decrypt_button.set_onclick(Some(decrypt_closure.as_ref().unchecked_ref()));
+    decrypt_closure.forget();
+
+    // Also trigger on Enter key in input
+    let encrypted_b64_clone2 = encrypted_b64.clone();
+    let passphrase_input_clone2 = passphrase_input.clone();
+    let enter_closure = Closure::wrap(Box::new(move |event: Event| {
+        // Check if Enter key was pressed
+        if let Some(keyboard_event) = event.dyn_ref::<web_sys::KeyboardEvent>() {
+            if keyboard_event.key() == "Enter" {
+                let _ = handle_decrypt(&encrypted_b64_clone2, &passphrase_input_clone2);
+            }
+        }
+    }) as Box<dyn FnMut(Event)>);
+
+    passphrase_input
+        .add_event_listener_with_callback("keydown", enter_closure.as_ref().unchecked_ref())?;
+    enter_closure.forget();
+
+    Ok(())
+}
+
+/// Handle decrypt button click
+fn handle_decrypt(encrypted_b64: &str, passphrase_input: &HtmlInputElement) -> Result<(), JsValue> {
+    let window = window().ok_or("no window")?;
+    let document = window.document().ok_or("no document")?;
+
+    // Get passphrase from input
+    let passphrase = passphrase_input.value();
+    if passphrase.is_empty() {
+        show_error("Please enter a passphrase")?;
+        return Ok(());
+    }
+
+    // Show decrypting status
+    show_status("Decrypting...")?;
+
+    // Decode base64
+    let Ok(encrypted_bytes) = BASE64_STANDARD.decode(encrypted_b64) else {
+        show_error("Invalid encrypted data format")?;
+        return Ok(());
+    };
+
+    // Decrypt
+    match decrypt_content(&encrypted_bytes, &passphrase) {
+        Ok(plaintext) => {
+            // Parse markdown to HTML (simple conversion for now)
+            let html = markdown_to_html(&plaintext);
+
+            // Display decrypted content
+            let content_div = document
+                .get_element_by_id("decrypted-content")
+                .ok_or("no decrypted-content")?;
+            content_div.set_inner_html(&html);
+
+            // Hide lock banner
+            if let Some(lock_banner) = document.get_element_by_id("lock-banner") {
+                lock_banner.set_class_name("hidden");
+            }
+
+            // Hide unlock interface
+            if let Some(unlock_interface) = document.get_element_by_id("unlock-interface") {
+                unlock_interface.set_class_name("hidden");
+            }
+
+            // Show decrypted content
+            content_div.set_class_name("decrypted-content");
+
+            // Clear passphrase input (security)
+            passphrase_input.set_value("");
+
+            Ok(())
+        }
+        Err(e) => {
+            show_error(&format!("Decryption failed: {e}"))?;
+            Ok(())
+        }
+    }
+}
+
+/// Decrypt encrypted content using AES-256-GCM + Argon2id
+fn decrypt_content(ciphertext: &[u8], passphrase: &str) -> Result<String, String> {
+    // Find delimiter position
+    let delimiter_pos = ciphertext
+        .iter()
+        .position(|&b| b == b'|')
+        .ok_or("Invalid ciphertext format: delimiter not found")?;
+
+    // Extract salt string
+    let salt_bytes = &ciphertext[..delimiter_pos];
+    let salt_str = std::str::from_utf8(salt_bytes).map_err(|_| "Salt is not valid UTF-8")?;
+    let salt = SaltString::from_b64(salt_str).map_err(|e| format!("Failed to parse salt: {e}"))?;
+
+    // Extract nonce (12 bytes after delimiter)
+    let nonce_start = delimiter_pos + 1;
+    let nonce_end = nonce_start + 12;
+    if ciphertext.len() < nonce_end {
+        return Err("Ciphertext too short for nonce".to_string());
+    }
+    let nonce_bytes = &ciphertext[nonce_start..nonce_end];
+    let nonce = Nonce::from_slice(nonce_bytes);
+
+    // Extract ciphertext data
+    let ciphertext_data = &ciphertext[nonce_end..];
+
+    // Derive key using Argon2id
+    let argon2 = Argon2::new(
+        argon2::Algorithm::Argon2id,
+        Version::V0x13,
+        ParamsBuilder::new()
+            .m_cost(ARGON2_MEMORY)
+            .t_cost(ARGON2_TIME)
+            .p_cost(ARGON2_PARALLELISM)
+            .output_len(32)
+            .build()
+            .map_err(|e| format!("Failed to build Argon2 parameters: {e}"))?,
+    );
+
+    let password_hash = argon2
+        .hash_password(passphrase.as_bytes(), &salt)
+        .map_err(|e| format!("Failed to derive key with Argon2id: {e}"))?;
+
+    let key_bytes = password_hash.hash.ok_or("Argon2 hash output is missing")?;
+
+    // Create AES-256-GCM cipher
+    let cipher = Aes256Gcm::new_from_slice(key_bytes.as_bytes())
+        .map_err(|_| "Failed to create AES-256-GCM cipher")?;
+
+    // Decrypt and verify
+    let plaintext_bytes = cipher
+        .decrypt(nonce, ciphertext_data)
+        .map_err(|_| "Decryption failed: incorrect passphrase or corrupted data")?;
+
+    // Convert to UTF-8 string
+    let plaintext =
+        String::from_utf8(plaintext_bytes).map_err(|_| "Decrypted content is not valid UTF-8")?;
+
+    Ok(plaintext)
+}
+
+/// Show error message in UI
+fn show_error(message: &str) -> Result<(), JsValue> {
+    let document = window()
+        .ok_or("no window")?
+        .document()
+        .ok_or("no document")?;
+
+    // Hide status if present
+    if let Some(status) = document.get_element_by_id("decrypt-status") {
+        status.set_class_name("hidden");
+    }
+
+    let error_div = document
+        .get_element_by_id("error-message")
+        .ok_or("no error-message")?;
+    error_div.set_text_content(Some(message));
+    error_div.set_class_name("error-message");
+    Ok(())
+}
+
+/// Show status message in UI
+fn show_status(message: &str) -> Result<(), JsValue> {
+    let document = window()
+        .ok_or("no window")?
+        .document()
+        .ok_or("no document")?;
+
+    // Hide error if present
+    if let Some(error) = document.get_element_by_id("error-message") {
+        error.set_class_name("hidden");
+    }
+
+    let status_div = document
+        .get_element_by_id("decrypt-status")
+        .ok_or("no decrypt-status")?;
+    status_div.set_text_content(Some(message));
+    status_div.set_class_name("decrypt-status");
+    Ok(())
+}
+
+/// Simple markdown to HTML conversion (basic implementation)
+fn markdown_to_html(markdown: &str) -> String {
+    // For now, use a very basic conversion
+    // In production, you'd want to use a proper markdown parser
+    let mut html = String::new();
+    let mut in_code_block = false;
+
+    for line in markdown.lines() {
+        if line.starts_with("```") {
+            in_code_block = !in_code_block;
+            if in_code_block {
+                html.push_str("<pre><code>");
+            } else {
+                html.push_str("</code></pre>\n");
+            }
+            continue;
+        }
+
+        if in_code_block {
+            html.push_str(&html_escape(line));
+            html.push('\n');
+        } else if let Some(stripped) = line.strip_prefix("### ") {
+            html.push_str("<h3>");
+            html.push_str(&process_inline_html(stripped));
+            html.push_str("</h3>\n");
+        } else if let Some(stripped) = line.strip_prefix("## ") {
+            html.push_str("<h2>");
+            html.push_str(&process_inline_html(stripped));
+            html.push_str("</h2>\n");
+        } else if let Some(stripped) = line.strip_prefix("# ") {
+            html.push_str("<h1>");
+            html.push_str(&process_inline_html(stripped));
+            html.push_str("</h1>\n");
+        } else if line.is_empty() {
+            html.push_str("<br>\n");
+        } else {
+            html.push_str("<p>");
+            html.push_str(&process_inline_html(line));
+            html.push_str("</p>\n");
+        }
+    }
+
+    html
+}
+
+/// Process inline HTML - allows certain safe HTML tags while escaping others
+fn process_inline_html(s: &str) -> String {
+    // Allow <span> tags with class attributes (for timestamps, etc.)
+    // This is a simple implementation - in production use a proper HTML sanitizer
+    let mut result = String::new();
+    let mut chars = s.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == '<' {
+            // Try to parse a tag
+            let mut tag = String::from("<");
+
+            // Check if it's a closing tag
+            if chars.peek() == Some(&'/') {
+                tag.push(chars.next().unwrap());
+            }
+
+            // Get tag name
+            let mut tag_name = String::new();
+            while let Some(&next_ch) = chars.peek() {
+                if next_ch == '>' || next_ch == ' ' {
+                    break;
+                }
+                tag_name.push(next_ch);
+                tag.push(next_ch);
+                chars.next();
+            }
+
+            // Collect rest of tag
+            while let Some(&next_ch) = chars.peek() {
+                tag.push(next_ch);
+                chars.next();
+                if next_ch == '>' {
+                    break;
+                }
+            }
+
+            // Allow span tags, escape others
+            if tag_name == "span" || tag_name == "strong" || tag_name == "em" || tag_name == "code"
+            {
+                result.push_str(&tag);
+            } else {
+                // Escape the tag
+                result.push_str(&html_escape(&tag));
+            }
+        } else {
+            result.push(ch);
+        }
+    }
+
+    result
+}
+
+/// Escape HTML special characters
+fn html_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#39;")
 }
 
 #[cfg(test)]

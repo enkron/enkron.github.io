@@ -8,6 +8,10 @@ cv.html
 github-pages.tar
 public/
 pub/
+priv/
 downloads/
 download/
 web/pkg/
+
+# Encryption lockfile (tracks encrypted entries)
+.enkronio-locks

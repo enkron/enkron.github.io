@@ -377,3 +377,62 @@ nav {
 .hidden {
     display: none !important;
 }
+
+/* 404 Error Page Styles */
+.error-page {
+    text-align: center;
+    padding: 4rem 2rem;
+    max-width: 60ch;
+    margin: 0 auto;
+    font-family: Hack, monospace;
+}
+
+.error-logo {
+    width: 192px;
+    height: 192px;
+    margin-bottom: 2rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.error-page h1 {
+    font-size: 6rem;
+    margin: 0;
+    font-family: Hack, monospace;
+    font-weight: bold;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.error-page p {
+    font-size: 1.5rem;
+    margin: 1rem 0 2rem 0;
+    color: var(--text-primary);
+    font-family: Hack, monospace;
+}
+
+.error-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.error-nav a {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--link-color);
+    color: var(--link-color);
+    text-decoration: none;
+    font-family: Hack, monospace;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: background 0.2s ease-in-out, color 0.2s ease-in-out;
+    display: inline-block;
+}
+
+.error-nav a:hover {
+    background: var(--link-color);
+    color: var(--bg-primary);
+}

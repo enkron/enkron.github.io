@@ -536,6 +536,95 @@ fn generate_locked_stub_from_encrypted(encrypted_b64: &str) -> String {
     stub
 }
 
+/// Generate a 404 error page with full layout
+fn generate_404_html() -> String {
+    let body = r#"
+<div class="error-page">
+    <img src="/favicon/android-chrome-192x192.png" alt="Logo" class="error-logo"/>
+    <h1>404</h1>
+    <p>Page not found</p>
+    <nav class="error-nav">
+        <a href="/">Home</a>
+        <a href="/pub/junkyard.html">Junkyard</a>
+    </nav>
+</div>
+"#;
+
+    let mut html = String::new();
+    html.push_str(&Layout::header());
+    html.push_str(&Layout::body(body));
+    html.push_str(&Layout::footer());
+    html
+}
+
+/// Generate a directory index stub that redirects to a target URL
+/// If `redirect_to` is None, displays a 404-style message
+fn generate_directory_index_html(redirect_to: Option<&str>) -> String {
+    if let Some(url) = redirect_to {
+        // Generate redirect stub
+        format!(
+            r#"<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="0;url={url}">
+    <link rel="canonical" href="{url}">
+    <title>Redirecting...</title>
+</head>
+<body>
+    <p>Redirecting to <a href="{url}">{url}</a>...</p>
+</body>
+</html>"#
+        )
+    } else {
+        // Generate 404-style stub
+        let body = r#"
+<div class="error-page">
+    <img src="/favicon/android-chrome-192x192.png" alt="Logo" class="error-logo"/>
+    <h1>404</h1>
+    <p>This directory is not browsable</p>
+    <nav class="error-nav">
+        <a href="/">Home</a>
+        <a href="/pub/junkyard.html">Junkyard</a>
+    </nav>
+</div>
+"#;
+
+        let mut html = String::new();
+        html.push_str(&Layout::header());
+        html.push_str(&Layout::body(body));
+        html.push_str(&Layout::footer());
+        html
+    }
+}
+
+/// Generate 404 page and directory index stubs to prevent directory listings
+fn generate_error_pages() -> Result<(), anyhow::Error> {
+    // Generate 404 page at root
+    let html_404 = generate_404_html();
+    fs::write("404.html", html_404)?;
+    eprintln!("Generated: 404.html");
+
+    // Generate directory index stubs to prevent directory listings
+    let pub_index = generate_directory_index_html(Some("/pub/junkyard.html"));
+    fs::write("pub/index.html", pub_index)?;
+    eprintln!("Generated: pub/index.html (redirects to junkyard)");
+
+    let pub_entries_index = generate_directory_index_html(Some("/pub/junkyard.html"));
+    fs::write("pub/entries/index.html", pub_entries_index)?;
+    eprintln!("Generated: pub/entries/index.html (redirects to junkyard)");
+
+    let priv_entries_index = generate_directory_index_html(None);
+    fs::write("priv/entries/index.html", priv_entries_index)?;
+    eprintln!("Generated: priv/entries/index.html (not browsable)");
+
+    let download_index = generate_directory_index_html(Some("/"));
+    fs::write("download/index.html", download_index)?;
+    eprintln!("Generated: download/index.html (redirects to home)");
+
+    Ok(())
+}
+
 struct Site;
 impl Site {
     fn build() -> Result<(), anyhow::Error> {
@@ -669,6 +758,9 @@ impl Site {
 
         Self::export("cv.md", "sbelokon")?;
         Self::export("index.md", "cover")?;
+
+        // Generate 404 page and directory index stubs
+        generate_error_pages()?;
 
         Ok(())
     }

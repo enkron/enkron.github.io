@@ -1,4 +1,4 @@
-out_files = pub priv download index.html cv.html
+out_files = pub priv download index.html cv.html 404.html
 
 .PHONY: site
 site:
@@ -12,3 +12,5 @@ clean:
 		for f in $(out_files); do \
 			echo removing $$f; \
 		done
+	git clean -f && \
+	git restore .

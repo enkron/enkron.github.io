@@ -5,6 +5,7 @@ _config.yml
 /target
 index.html
 cv.html
+404.html
 github-pages.tar
 public/
 pub/

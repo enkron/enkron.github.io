@@ -314,14 +314,29 @@ fn handle_decrypt(encrypted_b64: &str, passphrase_input: &HtmlInputElement) -> R
                 .ok_or("no decrypted-content")?;
             content_div.set_inner_html(&html);
 
-            // Hide lock banner
-            if let Some(lock_banner) = document.get_element_by_id("lock-banner") {
-                lock_banner.set_class_name("hidden");
+            // Remove blur from preview with transition
+            if let Some(locked_preview) = document.get_element_by_id("locked-preview") {
+                locked_preview.set_class_name("locked-preview");
             }
 
-            // Hide unlock interface
-            if let Some(unlock_interface) = document.get_element_by_id("unlock-interface") {
-                unlock_interface.set_class_name("hidden");
+            // Hide unlock overlay with fade
+            if let Some(unlock_overlay) = document.get_element_by_id("unlock-overlay") {
+                unlock_overlay.set_class_name("unlock-overlay hidden");
+            }
+
+            // Hide blurred preview after transition (500ms)
+            if let Some(locked_preview) = document.get_element_by_id("locked-preview") {
+                let preview_clone = locked_preview.clone();
+                let closure = Closure::once(Box::new(move || {
+                    preview_clone.set_class_name("hidden");
+                }) as Box<dyn FnOnce()>);
+
+                window
+                    .set_timeout_with_callback_and_timeout_and_arguments_0(
+                        closure.as_ref().unchecked_ref(),
+                        500,
+                    )?;
+                closure.forget();
             }
 
             // Show decrypted content

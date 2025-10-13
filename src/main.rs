@@ -497,37 +497,58 @@ fn generate_entry_navigation(entry_number: u32, is_shadow: bool) -> String {
 
 /// Generate a locked HTML stub with embedded encrypted content for browser decryption.
 ///
-/// This function creates the "🔒 Locked Entry" interface that users see before decryption.
-/// The encrypted markdown is embedded as base64 in a data attribute for WASM decryption.
+/// This function creates a blurred preview showing encrypted gibberish with a centered
+/// unlock overlay. The encrypted markdown is embedded as base64 in a data attribute for WASM decryption.
 ///
 /// This version directly embeds already-encrypted bytes without requiring the passphrase.
 /// The browser WASM module will handle decryption when the user enters their passphrase.
 fn generate_locked_stub_from_encrypted(encrypted_b64: &str) -> String {
-    // Generate the locked stub HTML
+    // Generate gibberish preview from encrypted data (first ~200 chars, formatted as hex)
+    let gibberish_preview = encrypted_b64
+        .chars()
+        .take(600)
+        .collect::<String>()
+        .chars()
+        .collect::<Vec<_>>()
+        .chunks(64)
+        .map(|chunk| chunk.iter().collect::<String>())
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    // Generate the locked stub HTML with blurred gibberish and centered unlock overlay
     let stub = format!(
         r#"
 <div id="locked-entry-container" class="locked-entry" data-encrypted="{encrypted_b64}">
-  <div id="lock-banner" class="lock-banner">
-    <span class="lock-icon">🔒</span>
-    <h2>This entry is encrypted</h2>
-    <p>Enter the passphrase to decrypt and view the content.</p>
+  <!-- Blurred encrypted gibberish preview -->
+  <div id="locked-preview" class="locked-preview blurred">
+    <h1>Encrypted Entry</h1>
+    <p class="encryption-notice">This content is encrypted with AES-256-GCM</p>
+    <pre class="encrypted-data">{gibberish_preview}</pre>
   </div>
 
-  <div id="unlock-interface" class="unlock-interface">
-    <input type="password"
-           id="passphrase-input"
-           placeholder="Enter passphrase"
-           autocomplete="off"
-           aria-label="Passphrase"
-           class="passphrase-input">
-    <button id="decrypt-button" class="decrypt-button">🔓 Unlock</button>
+  <!-- Centered unlock overlay -->
+  <div id="unlock-overlay" class="unlock-overlay">
+    <div class="unlock-form">
+      <span class="lock-icon">🔒</span>
+      <h2>Locked Entry</h2>
+      <p>Enter passphrase to decrypt</p>
 
-    <div id="error-message" class="error-message hidden" role="alert"></div>
-    <div id="decrypt-status" class="decrypt-status hidden" aria-live="polite">
-      Decrypting... (this may take a few seconds)
+      <input type="password"
+             id="passphrase-input"
+             placeholder="Passphrase"
+             autocomplete="off"
+             aria-label="Passphrase"
+             class="passphrase-input">
+      <button id="decrypt-button" class="decrypt-button">🔓 Unlock</button>
+
+      <div id="error-message" class="error-message hidden" role="alert"></div>
+      <div id="decrypt-status" class="decrypt-status hidden" aria-live="polite">
+        Decrypting...
+      </div>
     </div>
   </div>
 
+  <!-- Hidden decrypted content (shown after unlock) -->
   <div id="decrypted-content" class="decrypted-content hidden"></div>
 </div>
 "#,

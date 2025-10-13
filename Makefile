@@ -10,7 +10,6 @@ clean:
 	@echo cleaning working tree\\n && \
 		rm -rf $(out_files) && \
 		for f in $(out_files); do \
-			echo removing $$f; \
+			echo Removing $$f; \
 		done
-	git clean -f && \
-	git restore .
+	@git clean -f && git restore .

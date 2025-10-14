@@ -45,16 +45,66 @@ Shadow entries:
 - Not added to junkyard index
 - Navigation links only to other shadow entries
 
+### Edit blog entry
+Edit an existing entry by number or path:
+```bash
+# Edit public entry #5
+cargo run --release -- edit 5
+cargo run --release -- edit 5p
+
+# Edit shadow entry #5
+cargo run --release -- edit 5s
+
+# Edit by full path
+cargo run --release -- edit in/entries/5-title.md
+```
+
+Entry editing:
+- Opens entry in `$EDITOR` (defaults to `vim`)
+- Auto-decrypts locked entries (`.enc`) to temporary file
+- Auto-re-encrypts after editing (preserves encryption)
+- Temp files cleaned up automatically (RAII pattern)
+- Single passphrase attempt (fail-fast security)
+
+### Encrypt blog entry
+Password-protect an entry with AES-256-GCM encryption:
+```bash
+# Create and encrypt an entry
+cargo run --release -- add "Private Research"
+cargo run --release -- lock in/entries/7-private-research.md
+
+# Encrypt shadow entry (double privacy: unlisted + encrypted)
+cargo run --release -- add --shadow "Secret Notes"
+cargo run --release -- lock in/entries/shadow/1-secret-notes.md
+
+# Decrypt entry back to plaintext
+cargo run --release -- lock --unlock in/entries/7-private-research.enc
+```
+
+Encryption details:
+- Uses AES-256-GCM (authenticated encryption, tamper-proof)
+- Argon2id key derivation (64MB memory, GPU-resistant)
+- Source file: `.md` → `.enc` (encrypted on disk)
+- Browser-side decryption via WASM (no server needed)
+- Locked entries show blurred preview with unlock form
+- Set passphrase: `export ENKRONIO_LOCK_KEY="your-passphrase"`
+
 ### CLI reference
 ```bash
 enkronio [COMMAND]
 
 Commands:
   add [OPTIONS] <TITLE>    Add a new blog entry
+  edit <TARGET>            Edit existing entry (5p/5s/5 or full path)
+  lock [OPTIONS] <PATH>    Encrypt/decrypt entry with AES-256-GCM
   help                     Print help information
 
 Options for add:
   --shadow                 Create as shadow entry (private, not listed)
+  -h, --help              Print help
+
+Options for lock:
+  --unlock                 Decrypt .enc file back to .md
   -h, --help              Print help
 ```
 
@@ -76,6 +126,11 @@ priv/
 └── entries/          Generated shadow entry HTML (1.html, 2.html, ...)
 
 download/             Generated PDFs
+
+web/pkg/              WASM module for dark mode and decryption
+
+404.html              Custom 404 page
+pub/index.html        Directory index stub (redirects)
 ```
 
 ## Development

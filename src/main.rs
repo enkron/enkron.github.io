@@ -49,6 +49,12 @@ enum Commands {
         #[arg(short, long)]
         unlock: bool,
     },
+    /// Edit an existing blog entry
+    Edit {
+        /// Entry specifier: "5p" (public), "5s" (shadow), "5" (defaults to public),
+        /// or full path to markdown/encrypted file
+        target: String,
+    },
 }
 
 fn main() -> Result<(), anyhow::Error> {
@@ -60,6 +66,9 @@ fn main() -> Result<(), anyhow::Error> {
         }
         Some(Commands::Lock { path, unlock }) => {
             lock_file(&path, unlock)?;
+        }
+        Some(Commands::Edit { target }) => {
+            handle_edit(&target)?;
         }
         None => {
             // Default behavior: build the site
@@ -416,6 +425,267 @@ fn month_to_roman(month: u32) -> &'static str {
         12 => "XII",
         _ => "?",
     }
+}
+
+// ============================================================================
+// Edit Command Implementation
+// ============================================================================
+
+/// Entry visibility (public or shadow)
+#[derive(Debug, PartialEq, Copy, Clone)]
+enum Visibility {
+    Public,
+    Shadow,
+}
+
+/// Target specification parsed from user input
+#[derive(Debug)]
+enum TargetSpec {
+    Path(PathBuf),
+    Entry { num: u32, visibility: Visibility },
+}
+
+/// RAII guard for temporary file cleanup
+struct TempFileGuard(PathBuf);
+
+impl Drop for TempFileGuard {
+    fn drop(&mut self) {
+        if self.0.exists() {
+            let _ = fs::remove_file(&self.0);
+            eprintln!("Cleaned up temporary file: {}", self.0.display());
+        }
+    }
+}
+
+/// Main entry point for edit command
+fn handle_edit(target: &str) -> Result<(), anyhow::Error> {
+    // Parse target (path or entry specifier)
+    let target_spec = parse_target(target)?;
+
+    // Resolve to file path
+    let file_path = match target_spec {
+        TargetSpec::Path(path) => {
+            if !path.exists() {
+                return Err(anyhow::anyhow!("File not found: {}", path.display()));
+            }
+            path
+        }
+        TargetSpec::Entry { num, visibility } => resolve_entry(num, visibility)?,
+    };
+
+    // Determine if file is encrypted
+    let is_encrypted = file_path
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("enc"));
+
+    if is_encrypted {
+        handle_edit_locked_file(&file_path)?;
+    } else {
+        handle_edit_plain_file(&file_path)?;
+    }
+
+    Ok(())
+}
+
+/// Parse target string into `TargetSpec`
+fn parse_target(target: &str) -> Result<TargetSpec, anyhow::Error> {
+    // Check if it's a file path (contains / or exists as file)
+    if target.contains('/') || Path::new(target).exists() {
+        return Ok(TargetSpec::Path(PathBuf::from(target)));
+    }
+
+    // Parse as entry specifier: <number>[p|s]
+    let (num_str, visibility) = if let Some(stripped) = target.strip_suffix('p') {
+        (stripped, Visibility::Public)
+    } else if let Some(stripped) = target.strip_suffix('s') {
+        (stripped, Visibility::Shadow)
+    } else {
+        // Default to public if no suffix
+        (target, Visibility::Public)
+    };
+
+    let entry_num = num_str.parse::<u32>().map_err(|_| {
+        anyhow::anyhow!(
+            "Invalid entry specifier '{}'. Format: <number>[p|s]. Examples: 5p, 12s",
+            target
+        )
+    })?;
+
+    Ok(TargetSpec::Entry {
+        num: entry_num,
+        visibility,
+    })
+}
+
+/// Resolve entry number to file path
+fn resolve_entry(num: u32, visibility: Visibility) -> Result<PathBuf, anyhow::Error> {
+    let entries_dir = match visibility {
+        Visibility::Public => ENTRIES_DIR,
+        Visibility::Shadow => SHADOW_ENTRIES_DIR,
+    };
+
+    let visibility_str = match visibility {
+        Visibility::Public => "public",
+        Visibility::Shadow => "shadow",
+    };
+
+    find_entry_file(entries_dir, num)
+        .map_err(|_| anyhow::anyhow!("Entry {} not found in {} entries", num, visibility_str))
+}
+
+/// Find entry file by number, preferring .enc over .md
+fn find_entry_file(dir: &str, num: u32) -> Result<PathBuf, anyhow::Error> {
+    let pattern = format!("{num}-");
+
+    // Try .enc first
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.filter_map(Result::ok) {
+            let path = entry.path();
+            if let Some(filename) = path.file_name().and_then(|n| n.to_str()) {
+                if filename.starts_with(&pattern)
+                    && path.extension().and_then(|e| e.to_str()) == Some("enc")
+                {
+                    return Ok(path);
+                }
+            }
+        }
+    }
+
+    // Fall back to .md
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.filter_map(Result::ok) {
+            let path = entry.path();
+            if let Some(filename) = path.file_name().and_then(|n| n.to_str()) {
+                if filename.starts_with(&pattern)
+                    && path.extension().and_then(|e| e.to_str()) == Some("md")
+                {
+                    return Ok(path);
+                }
+            }
+        }
+    }
+
+    Err(anyhow::anyhow!("Entry {num} not found in {dir}"))
+}
+
+/// Handle editing of plain markdown file
+fn handle_edit_plain_file(md_path: &Path) -> Result<(), anyhow::Error> {
+    eprintln!("Editing: {}", md_path.display());
+    open_in_editor(md_path)?;
+    eprintln!("Saved: {}", md_path.display());
+    Ok(())
+}
+
+/// Handle editing of encrypted file
+fn handle_edit_locked_file(enc_path: &Path) -> Result<(), anyhow::Error> {
+    eprintln!("Entry is encrypted. Decrypting for editing...");
+
+    // Get passphrase
+    let passphrase = get_passphrase("Enter passphrase to decrypt for editing:")?;
+
+    // Decrypt
+    let encrypted_bytes = fs::read(enc_path)?;
+    let plaintext = crypto::decrypt(&encrypted_bytes, &passphrase)?;
+
+    // Extract entry number from filename
+    let entry_num = extract_entry_number(enc_path)?;
+
+    // Create temp file
+    let temp_file = create_temp_file_for_edit(entry_num, &plaintext)?;
+    let _guard = TempFileGuard(temp_file.clone());
+
+    eprintln!("Decrypted to temporary file: {}", temp_file.display());
+
+    // Open in editor
+    open_in_editor(&temp_file)?;
+
+    // Read edited content
+    let edited_content = fs::read_to_string(&temp_file)?;
+
+    // Re-encrypt
+    let encrypted_bytes = crypto::encrypt(&edited_content, &passphrase)?;
+    fs::write(enc_path, encrypted_bytes)?;
+
+    eprintln!("Re-encrypted: {}", enc_path.display());
+
+    Ok(())
+    // Temp file cleaned up by Drop guard
+}
+
+/// Create temporary file for editing encrypted content
+fn create_temp_file_for_edit(entry_num: u32, content: &str) -> Result<PathBuf, anyhow::Error> {
+    use rand::Rng;
+
+    let random_suffix: String = rand::thread_rng()
+        .sample_iter(&rand::distributions::Alphanumeric)
+        .take(8)
+        .map(char::from)
+        .collect();
+
+    let temp_dir = std::env::temp_dir();
+    let temp_file = temp_dir.join(format!("enkronio-edit-{entry_num}-{random_suffix}.md"));
+
+    fs::write(&temp_file, content)?;
+
+    Ok(temp_file)
+}
+
+/// Extract entry number from file path
+fn extract_entry_number(path: &Path) -> Result<u32, anyhow::Error> {
+    let filename = path
+        .file_name()
+        .and_then(|f| f.to_str())
+        .ok_or_else(|| anyhow::anyhow!("Invalid filename"))?;
+
+    // Remove .enc extension if present
+    let filename_clean = filename.strip_suffix(".enc").unwrap_or(filename);
+    let filename_clean = filename_clean.strip_suffix(".md").unwrap_or(filename_clean);
+
+    // Extract number before first dash
+    filename_clean
+        .find('-')
+        .and_then(|dash_pos| filename_clean[..dash_pos].parse::<u32>().ok())
+        .ok_or_else(|| anyhow::anyhow!("Could not extract entry number from filename"))
+}
+
+/// Get editor from environment or fallback to vim
+fn get_editor() -> String {
+    if let Ok(editor) = std::env::var("EDITOR") {
+        if !editor.is_empty() {
+            return editor;
+        }
+    }
+
+    // Fallback to vim
+    "vim".to_string()
+}
+
+/// Open file in editor and wait for it to close
+fn open_in_editor(file_path: &Path) -> Result<(), anyhow::Error> {
+    let editor = get_editor();
+
+    eprintln!("Opening in {}: {}", editor, file_path.display());
+
+    let status = std::process::Command::new(&editor)
+        .arg(file_path)
+        .status()
+        .map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to launch editor '{}': {}. Set $EDITOR environment variable or install vim",
+                editor,
+                e
+            )
+        })?;
+
+    if !status.success() {
+        return Err(anyhow::anyhow!(
+            "Editor exited with non-zero status: {:?}",
+            status.code()
+        ));
+    }
+
+    Ok(())
 }
 
 /// Generate navigation HTML for blog entry pagination
@@ -908,5 +1178,88 @@ mod tests {
     fn test_generate_entry_filename_large_number() {
         let filename = generate_entry_filename(999_999, "Test Entry");
         assert_eq!(filename, "999999-test-entry.md");
+    }
+
+    // Edit command tests
+
+    /// Tests `parse_target` with public entry specifier (explicit)
+    #[test]
+    fn test_parse_target_public_explicit() {
+        let spec = parse_target("5p").unwrap();
+        assert!(matches!(
+            spec,
+            TargetSpec::Entry {
+                num: 5,
+                visibility: Visibility::Public
+            }
+        ));
+    }
+
+    /// Tests `parse_target` with shadow entry specifier
+    #[test]
+    fn test_parse_target_shadow() {
+        let spec = parse_target("12s").unwrap();
+        assert!(matches!(
+            spec,
+            TargetSpec::Entry {
+                num: 12,
+                visibility: Visibility::Shadow
+            }
+        ));
+    }
+
+    /// Tests `parse_target` defaults to public when no modifier
+    #[test]
+    fn test_parse_target_defaults_to_public() {
+        let spec = parse_target("7").unwrap();
+        assert!(matches!(
+            spec,
+            TargetSpec::Entry {
+                num: 7,
+                visibility: Visibility::Public
+            }
+        ));
+    }
+
+    /// Tests `parse_target` with invalid specifier
+    #[test]
+    fn test_parse_target_invalid_specifier() {
+        let err = parse_target("abc").unwrap_err();
+        assert!(err.to_string().contains("Invalid entry specifier"));
+    }
+
+    /// Tests `parse_target` with relative path
+    #[test]
+    fn test_parse_target_relative_path() {
+        let spec = parse_target("in/entries/5-title.md").unwrap();
+        assert!(matches!(spec, TargetSpec::Path(_)));
+    }
+
+    /// Tests `extract_entry_number` from markdown filename
+    #[test]
+    fn test_extract_entry_number_from_md() {
+        let path = PathBuf::from("in/entries/5-title.md");
+        assert_eq!(extract_entry_number(&path).unwrap(), 5);
+    }
+
+    /// Tests `extract_entry_number` from encrypted filename
+    #[test]
+    fn test_extract_entry_number_from_enc() {
+        let path = PathBuf::from("in/entries/12-private.enc");
+        assert_eq!(extract_entry_number(&path).unwrap(), 12);
+    }
+
+    /// Tests `extract_entry_number` from shadow entry
+    #[test]
+    fn test_extract_entry_number_from_shadow() {
+        let path = PathBuf::from("in/entries/shadow/7-secret.md");
+        assert_eq!(extract_entry_number(&path).unwrap(), 7);
+    }
+
+    /// Tests `extract_entry_number` with large number
+    #[test]
+    fn test_extract_entry_number_large() {
+        let path = PathBuf::from("in/entries/999-test.md");
+        assert_eq!(extract_entry_number(&path).unwrap(), 999);
     }
 }
